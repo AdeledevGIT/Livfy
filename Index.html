@@ -42,6 +42,7 @@
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
         button {
             padding: 10px 15px;
@@ -50,6 +51,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
         }
         button:hover {
             background-color: #45a049;
@@ -61,11 +63,17 @@
             position: relative;
             margin: 20px auto;
             max-width: 640px;
+            width: 100%;
+        }
+        .preview-container video {
+            width: 100%;
+            display: block;
         }
         .preview-container canvas {
             position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
         }
     </style>
 </head>
@@ -106,6 +114,6 @@
     <!-- Scripts for face detection and swapping -->
     <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="app.js"></script>
+    <script src="App.js"></script>
 </body>
 </html>

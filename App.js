@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputCtx = outputCanvas.getContext('2d');
     const startCameraBtn = document.getElementById('startCamera');
     const toggleFaceSwapBtn = document.getElementById('toggleFaceSwap');
+    const toggleBodySegmentationBtn = document.getElementById('toggleBodySegmentation');
     const takePictureBtn = document.getElementById('takePicture');
     const imageUpload = document.getElementById('imageUpload');
     const uploadedImagePreview = document.getElementById('uploadedImagePreview');
@@ -15,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // State variables
     let camera = null;
     let faceDetection = null;
+    let selfieSegmentation = null;
     let isFaceSwapActive = false;
+    let isBodySegmentationActive = false;
     let backgroundImage = null;
     let backgroundImageData = null;
     
@@ -23,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeFaceDetection() {
         faceDetection = new FaceDetection({
             locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/\${file}`;
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
             }
         });
         
@@ -33,6 +36,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         faceDetection.onResults(onFaceDetectionResults);
+    }
+    
+    // Initialize selfie segmentation for body detection
+    function initializeSelfieSegmentation() {
+        selfieSegmentation = new SelfieSegmentation({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
+            }
+        });
+        
+        selfieSegmentation.setOptions({
+            modelSelection: 1, // 0 for general, 1 for portrait
+        });
+        
+        selfieSegmentation.onResults(onSelfieSegmentationResults);
     }
     
     // Handle face detection results
@@ -58,6 +76,46 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // If face swap is not active, just draw the video
             outputCtx.drawImage(video, 0, 0, outputCanvas.width, outputCanvas.height);
+        }
+    }
+    
+    // Handle selfie segmentation results
+    function onSelfieSegmentationResults(results) {
+        // Set canvas dimensions to match video
+        outputCanvas.width = video.videoWidth;
+        outputCanvas.height = video.videoHeight;
+        
+        // Clear canvas
+        outputCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+        
+        if (backgroundImageData) {
+            // Draw the uploaded background image
+            outputCtx.drawImage(backgroundImageData, 0, 0, outputCanvas.width, outputCanvas.height);
+        }
+        
+        if (isBodySegmentationActive && results.segmentationMask) {
+            // Create a temporary canvas for the person
+            const personCanvas = document.createElement('canvas');
+            personCanvas.width = outputCanvas.width;
+            personCanvas.height = outputCanvas.height;
+            const personCtx = personCanvas.getContext('2d');
+            
+            // Save the current context state
+            personCtx.save();
+            
+            // Draw the segmentation mask
+            personCtx.globalCompositeOperation = 'copy';
+            personCtx.drawImage(results.segmentationMask, 0, 0, outputCanvas.width, outputCanvas.height);
+            
+            // Apply the video to the mask
+            personCtx.globalCompositeOperation = 'source-in';
+            personCtx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
+            
+            // Restore context state
+            personCtx.restore();
+            
+            // Draw the person on top of the background
+            outputCtx.drawImage(personCanvas, 0, 0);
         }
     }
     
@@ -90,12 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
             faceCanvas,
             (x - width/2), (y - height/2), width, height
         );
-        
-        // For body/clothing, you would need more advanced segmentation
-        // This is a simplified approach that just swaps the face
     }
     
-    // Start camera
+    // Start camera with both face and body detection support
     async function startCamera() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -106,7 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             camera = new Camera(video, {
                 onFrame: async () => {
-                    if (faceDetection) {
+                    if (isBodySegmentationActive && selfieSegmentation) {
+                        await selfieSegmentation.send({ image: video });
+                    } else if (faceDetection) {
                         await faceDetection.send({ image: video });
                     }
                 },
@@ -136,7 +193,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle face swap
     function toggleFaceSwap() {
         isFaceSwapActive = !isFaceSwapActive;
+        isBodySegmentationActive = false; // Disable body segmentation when face swap is active
         toggleFaceSwapBtn.textContent = isFaceSwapActive ? 'Disable Face Swap' : 'Enable Face Swap';
+        toggleBodySegmentationBtn.textContent = 'Enable Body Segmentation';
+    }
+    
+    // Toggle body segmentation
+    function toggleBodySegmentation() {
+        isBodySegmentationActive = !isBodySegmentationActive;
+        isFaceSwapActive = false; // Disable face swap when body segmentation is active
+        toggleBodySegmentationBtn.textContent = isBodySegmentationActive ? 'Disable Body Segmentation' : 'Enable Body Segmentation';
+        toggleFaceSwapBtn.textContent = 'Enable Face Swap';
     }
     
     // Take picture
@@ -164,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Set canvas dimensions to match video
                     bgCanvas.width = 640;
-                    bgCanvas.height =480;
+                    bgCanvas.height = 480;
                     
                     // Draw the image to the canvas (maintaining aspect ratio)
                     const scale = Math.min(bgCanvas.width / backgroundImage.width, bgCanvas.height / backgroundImage.height);
@@ -182,123 +249,15 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsDataURL(file);
         }
     }
-  // Add these variables to your existing JavaScript
-let selfieSegmentation = null;
-let isBodySegmentationActive = false;
-
-// Initialize selfie segmentation for body detection
-function initializeSelfieSegmentation() {
-    selfieSegmentation = new SelfieSegmentation({
-        locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
-        }
-    });
-    
-    selfieSegmentation.setOptions({
-        modelSelection: 1, // 0 for general, 1 for portrait
-    });
-    
-    selfieSegmentation.onResults(onSelfieSegmentationResults);
-}
-
-// Handle selfie segmentation results
-function onSelfieSegmentationResults(results) {
-    // Set canvas dimensions to match video
-    outputCanvas.width = video.videoWidth;
-    outputCanvas.height = video.videoHeight;
-    
-    // Clear canvas
-    outputCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-    
-    if (backgroundImageData) {
-        // Draw the uploaded background image
-        outputCtx.drawImage(backgroundImageData, 0, 0, outputCanvas.width, outputCanvas.height);
-    }
-    
-    if (isBodySegmentationActive && results.segmentationMask) {
-        // Create a temporary canvas for the person
-        const personCanvas = document.createElement('canvas');
-        personCanvas.width = outputCanvas.width;
-        personCanvas.height = outputCanvas.height;
-        const personCtx = personCanvas.getContext('2d');
-        
-        // Save the current context state
-        personCtx.save();
-        
-        // Draw the segmentation mask
-        personCtx.globalCompositeOperation = 'copy';
-        personCtx.drawImage(results.segmentationMask, 0, 0, outputCanvas.width, outputCanvas.height);
-        
-        // Apply the video to the mask
-        personCtx.globalCompositeOperation = 'source-in';
-        personCtx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
-        
-        // Restore context state
-        personCtx.restore();
-        
-        // Draw the person on top of the background
-        outputCtx.drawImage(personCanvas, 0, 0);
-    }
-}
-
-// Enhanced camera function to use both face and body detection
-async function startAdvancedCamera() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: 640, height: 480 }
-        });
-        
-        video.srcObject = stream;
-        
-        camera = new Camera(video, {
-            onFrame: async () => {
-                if (isBodySegmentationActive && selfieSegmentation) {
-                    await selfieSegmentation.send({ image: video });
-                } else if (faceDetection) {
-                    await faceDetection.send({ image: video });
-                }
-            },
-            width: 640,
-            height: 480
-        });
-        
-        camera.start();
-        startCameraBtn.textContent = 'Stop Camera';
-        startCameraBtn.onclick = stopCamera;
-    } catch (error) {
-        console.error('Error accessing camera:', error);
-        alert('Could not access camera. Please check permissions.');
-    }
-}
-
-// Add toggle for body segmentation
-function toggleBodySegmentation() {
-    isBodySegmentationActive = !isBodySegmentationActive;
-    isFaceSwapActive = false; // Disable face swap when body segmentation is active
-    
-    // Update UI
-    toggleFaceSwapBtn.textContent = 'Enable Face Swap';
-    toggleBodySegmentationBtn.textContent = isBodySegmentationActive ? 'Disable Body Segmentation' : 'Enable Body Segmentation';
-}
-
-// Add to your event listeners
-const toggleBodySegmentationBtn = document.getElementById('toggleBodySegmentation');
-if (toggleBodySegmentationBtn) {
-    toggleBodySegmentationBtn.addEventListener('click', toggleBodySegmentation);
-}
-
-// Initialize both detection methods when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    initializeFaceDetection();
-    initializeSelfieSegmentation();
-});
     
     // Event listeners
     startCameraBtn.addEventListener('click', startCamera);
     toggleFaceSwapBtn.addEventListener('click', toggleFaceSwap);
+    toggleBodySegmentationBtn.addEventListener('click', toggleBodySegmentation);
     takePictureBtn.addEventListener('click', takePicture);
     imageUpload.addEventListener('change', handleImageUpload);
     
-    // Initialize face detection when page loads
+    // Initialize both detection methods when page loads
     initializeFaceDetection();
+    initializeSelfieSegmentation();
 });

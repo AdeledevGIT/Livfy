@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LiveSwap — Real AI Face Swap (Decart lucy-2.1)</title>
+  <title>LiveSwap — Real AI Face Swap</title>
   <meta name="description" content="Real-time AI face swap powered by Decart lucy-2.1 — stream your webcam through true neural face transformation via WebRTC." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,568 +11,670 @@
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     :root {
-      --bg:#060810; --bg2:#0b0f1a; --card:rgba(255,255,255,.035);
-      --border:rgba(255,255,255,.07); --border-h:rgba(255,255,255,.14);
-      --txt:#eef2ff; --txt2:rgba(238,242,255,.55); --txt3:rgba(238,242,255,.3);
+      --bg:#060810;
+      --card:rgba(255,255,255,.038);
+      --border:rgba(255,255,255,.07);
+      --border-h:rgba(255,255,255,.13);
+      --txt:#eef2ff;
+      --txt2:rgba(238,242,255,.55);
+      --txt3:rgba(238,242,255,.28);
       --accent:#6366f1; --accent2:#8b5cf6; --cyan:#06b6d4;
       --green:#10b981; --amber:#f59e0b; --red:#ef4444;
       --grad:linear-gradient(135deg,#6366f1,#8b5cf6 50%,#06b6d4);
-      --glow:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(99,102,241,.14) 0,transparent 60%),
-             radial-gradient(ellipse 70% 50% at 80% 90%,rgba(139,92,246,.1) 0,transparent 60%);
     }
-    html,body{height:100%;}
-    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);background-image:var(--glow);
-      color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;}
+    html, body { height:100%; }
+    body {
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg);
+      background-image:
+        radial-gradient(ellipse 90% 60% at 15% 0%,rgba(99,102,241,.15) 0,transparent 65%),
+        radial-gradient(ellipse 70% 55% at 85% 95%,rgba(139,92,246,.12) 0,transparent 65%),
+        radial-gradient(ellipse 50% 40% at 50% 50%,rgba(6,182,212,.05) 0,transparent 70%);
+      color:var(--txt);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+    }
 
-    .hdr{display:flex;align-items:center;justify-content:space-between;padding:15px 32px;
-      background:rgba(6,8,16,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);
-      position:sticky;top:0;z-index:200;}
-    .logo{display:flex;align-items:center;gap:11px;text-decoration:none;}
-    .logo-orb{width:32px;height:32px;border-radius:9px;background:var(--grad);display:flex;
-      align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 20px rgba(99,102,241,.4);}
-    .logo-name{font-size:20px;font-weight:800;letter-spacing:-.03em;
-      background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-    .pill{display:flex;align-items:center;gap:7px;padding:5px 14px;border-radius:100px;font-size:11.5px;font-weight:600;}
-    .pill.amber{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber);}
-    .pill.green{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green);}
-    .pill.blue{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);color:var(--accent);}
-    .dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 2s ease-in-out infinite;}
-    @keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.65)}}
+    /* ── HEADER ──────────────────────────────────────── */
+    .hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 28px;
+      background:rgba(6,8,16,.85); backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:300;
+    }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-orb {
+      width:34px; height:34px; border-radius:10px; background:var(--grad);
+      display:flex; align-items:center; justify-content:center; font-size:17px;
+      box-shadow:0 0 22px rgba(99,102,241,.45);
+    }
+    .logo-name {
+      font-size:21px; font-weight:900; letter-spacing:-.04em;
+      background:var(--grad); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .hdr-right { display:flex; align-items:center; gap:10px; }
+    .status-pill {
+      display:flex; align-items:center; gap:6px;
+      padding:5px 13px; border-radius:100px;
+      font-size:11.5px; font-weight:600;
+    }
+    .sp-idle { background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--txt3); }
+    .sp-live { background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.3); color:var(--accent); }
+    .sp-ok   { background:rgba(16,185,129,.1);  border:1px solid rgba(16,185,129,.28); color:var(--green); }
+    .sp-err  { background:rgba(239,68,68,.1);   border:1px solid rgba(239,68,68,.28);  color:var(--red); }
+    .live-dot { width:7px; height:7px; border-radius:50%; background:currentColor; animation:blink 1.4s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.25;transform:scale(.6)} }
 
-    .main{max-width:1360px;margin:0 auto;padding:40px 32px 80px;}
-    .hero{text-align:center;margin-bottom:44px;}
-    .hero-tag{display:inline-flex;align-items:center;gap:7px;padding:5px 15px;border-radius:100px;
-      background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);
-      font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px;}
-    h1{font-size:clamp(30px,5vw,58px);font-weight:900;letter-spacing:-.035em;line-height:1.08;margin-bottom:14px;}
-    h1 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-    .hero-sub{font-size:16px;color:var(--txt2);max-width:500px;margin:0 auto;line-height:1.65;}
-    .tech-pills{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap;}
-    .tech-pill{padding:4px 12px;border-radius:100px;font-size:10.5px;font-weight:600;
-      background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--txt3);}
+    /* ── APP LAYOUT ──────────────────────────────────── */
+    .app {
+      display:grid;
+      grid-template-columns:320px 1fr;
+      gap:0;
+      height:calc(100vh - 63px);
+    }
 
-    /* API key banner */
-    .api-banner{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);
-      border-radius:14px;padding:18px 22px;margin-bottom:28px;
-      display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-    .api-banner-left{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-    .api-banner-ico{width:38px;height:38px;border-radius:10px;background:var(--grad);
-      display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-    .api-banner-text{flex:1;min-width:220px;}
-    .api-banner-text strong{display:block;font-size:13px;font-weight:700;margin-bottom:3px;}
-    .api-banner-text span{font-size:11.5px;color:var(--txt2);}
-    .api-banner-text a{color:var(--accent);text-decoration:none;}
-    .api-banner-text a:hover{text-decoration:underline;}
-    .api-input-wrap{display:flex;gap:8px;flex:2;min-width:260px;}
-    .api-input{flex:1;padding:9px 14px;border-radius:9px;border:1px solid var(--border-h);
-      background:rgba(6,8,16,.9);color:var(--txt);font-size:13px;font-family:inherit;
-      transition:border-color .2s;}
-    .api-input:focus{outline:none;border-color:var(--accent);}
-    .api-input::placeholder{color:var(--txt3);}
-    .api-save-btn{padding:9px 18px;border-radius:9px;border:none;background:var(--grad);
-      color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .2s;
-      white-space:nowrap;font-family:inherit;}
-    .api-save-btn:hover{opacity:.88;}
+    /* ── LEFT SIDEBAR ─────────────────────────────────── */
+    .sidebar {
+      background:rgba(6,8,16,.6);
+      border-right:1px solid var(--border);
+      overflow-y:auto;
+      display:flex; flex-direction:column;
+      gap:0;
+    }
+    .sidebar::-webkit-scrollbar { width:4px; }
+    .sidebar::-webkit-scrollbar-track { background:transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:4px; }
 
-    .grid{display:grid;grid-template-columns:1fr 1.65fr;gap:22px;}
-    @media(max-width:900px){.grid{grid-template-columns:1fr;}}
-
-    .panel{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;
-      backdrop-filter:blur(12px);transition:border-color .3s,box-shadow .3s;}
-    .panel.active{border-color:rgba(99,102,241,.4);
-      box-shadow:0 0 0 1px rgba(99,102,241,.2),0 0 60px rgba(99,102,241,.2);
-      animation:panelGlow 2.5s ease-in-out infinite alternate;}
-    @keyframes panelGlow{
-      from{box-shadow:0 0 0 1px rgba(99,102,241,.15),0 0 25px rgba(99,102,241,.1);}
-      to{box-shadow:0 0 0 1px rgba(99,102,241,.35),0 0 70px rgba(99,102,241,.25);}}
-    .panel-head{display:flex;align-items:center;justify-content:space-between;
-      padding:16px 20px 13px;border-bottom:1px solid var(--border);}
-    .panel-title{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--txt2);}
-    .p-ico{width:25px;height:25px;border-radius:7px;background:rgba(99,102,241,.14);
-      display:flex;align-items:center;justify-content:center;font-size:12px;}
-    .badge{padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.03em;}
-    .b-idle{background:rgba(255,255,255,.05);color:var(--txt3);}
-    .b-ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green);}
-    .b-busy{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber);}
-    .b-live{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:var(--accent);}
-    .panel-body{padding:20px;}
+    .s-section {
+      padding:20px 18px;
+      border-bottom:1px solid var(--border);
+    }
+    .s-label {
+      font-size:9.5px; font-weight:700; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--txt3); margin-bottom:12px;
+      display:flex; align-items:center; gap:7px;
+    }
+    .s-label::after { content:''; flex:1; height:1px; background:var(--border); }
 
     /* Drop zone */
-    .drop{border:2px dashed var(--border-h);border-radius:12px;padding:34px 20px;text-align:center;
-      cursor:pointer;transition:all .3s;position:relative;user-select:none;}
-    .drop:hover,.drop.over{border-color:var(--accent);background:rgba(99,102,241,.05);}
-    .drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-    .drop-ico{font-size:36px;display:block;margin-bottom:10px;
-      transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
-    .drop:hover .drop-ico{transform:translateY(-5px) scale(1.08);}
-    .drop-t{font-size:14px;font-weight:600;margin-bottom:4px;}
-    .drop-s{font-size:12px;color:var(--txt3);}
+    .drop {
+      border:2px dashed rgba(99,102,241,.28); border-radius:12px;
+      padding:28px 16px; text-align:center; cursor:pointer;
+      transition:all .3s; position:relative; user-select:none;
+      background:rgba(99,102,241,.03);
+    }
+    .drop:hover, .drop.over {
+      border-color:var(--accent); background:rgba(99,102,241,.07);
+    }
+    .drop input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .drop-ico { font-size:30px; display:block; margin-bottom:8px; transition:transform .35s cubic-bezier(.34,1.56,.64,1); }
+    .drop:hover .drop-ico { transform:translateY(-4px) scale(1.1); }
+    .drop-t { font-size:13px; font-weight:600; color:var(--txt2); margin-bottom:3px; }
+    .drop-s { font-size:10.5px; color:var(--txt3); }
 
-    /* Preview */
-    .photo-box{position:relative;border-radius:10px;overflow:hidden;background:#000;}
-    .photo-box img{width:100%;max-height:240px;object-fit:contain;display:block;}
-    .photo-cap{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;
-      background:linear-gradient(transparent,rgba(0,0,0,.75));}
-    .photo-cpill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:100px;
-      background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);
-      font-size:10px;font-weight:700;color:var(--green);}
-    .btn-change{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
-      padding:9px;margin-top:8px;border-radius:8px;border:1px solid var(--border);
-      background:transparent;color:var(--txt2);font-size:12px;font-weight:500;
-      cursor:pointer;transition:all .25s;position:relative;font-family:inherit;}
-    .btn-change input{position:absolute;inset:0;opacity:0;cursor:pointer;}
-    .btn-change:hover{background:rgba(255,255,255,.04);color:var(--txt);border-color:var(--border-h);}
+    /* Preview photo */
+    .photo-preview {
+      border-radius:10px; overflow:hidden; position:relative;
+      background:#000; aspect-ratio:1/1;
+    }
+    .photo-preview img { width:100%; height:100%; object-fit:cover; display:block; }
+    .photo-overlay {
+      position:absolute; bottom:0; left:0; right:0;
+      padding:10px 12px;
+      background:linear-gradient(transparent, rgba(0,0,0,.8));
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .ok-chip {
+      display:flex; align-items:center; gap:5px;
+      padding:3px 9px; border-radius:100px;
+      background:rgba(16,185,129,.25); border:1px solid rgba(16,185,129,.4);
+      font-size:9.5px; font-weight:700; color:var(--green);
+    }
+    .change-btn {
+      padding:4px 10px; border-radius:7px; border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.08); color:var(--txt2);
+      font-size:10px; font-weight:600; cursor:pointer;
+      transition:all .2s; position:relative; font-family:inherit;
+    }
+    .change-btn input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .change-btn:hover { background:rgba(255,255,255,.14); color:var(--txt); }
 
     /* Prompt */
-    .prompt-area{width:100%;padding:10px 13px;border-radius:9px;border:1px solid var(--border);
-      background:rgba(6,8,16,.6);color:var(--txt);font-size:12.5px;font-family:inherit;
-      resize:none;min-height:72px;transition:border-color .2s;margin-top:14px;}
-    .prompt-area:focus{outline:none;border-color:rgba(99,102,241,.4);}
-    .prompt-area:disabled{opacity:.45;cursor:not-allowed;}
-    .field-label{font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.05em;text-transform:uppercase;margin-top:14px;margin-bottom:5px;}
+    .prompt-ta {
+      width:100%; padding:10px 12px; border-radius:9px;
+      border:1px solid var(--border-h);
+      background:rgba(6,8,16,.7); color:var(--txt);
+      font-size:12px; font-family:inherit; resize:none; min-height:76px;
+      transition:border-color .2s; line-height:1.55;
+    }
+    .prompt-ta:focus { outline:none; border-color:rgba(99,102,241,.45); }
 
-    /* Steps */
-    .steps{display:flex;flex-direction:column;gap:7px;margin-top:14px;}
-    .step{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
-      background:rgba(255,255,255,.025);border:1px solid var(--border);transition:all .3s;}
-    .step.active{background:rgba(99,102,241,.07);border-color:rgba(99,102,241,.22);}
-    .step.done{background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.18);}
-    .step-n{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
-      justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;
-      background:var(--border);color:var(--txt3);transition:all .3s;}
-    .step.active .step-n{background:var(--accent);color:#fff;}
-    .step.done .step-n{background:var(--green);color:#fff;}
-    .step-l{font-size:11.5px;font-weight:500;color:var(--txt3);transition:color .3s;}
-    .step.active .step-l,.step.done .step-l{color:var(--txt2);}
+    /* Orient toggle */
+    .orient-toggle {
+      display:flex; gap:6px;
+    }
+    .orient-btn {
+      flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+      padding:10px 8px; border-radius:9px; cursor:pointer;
+      border:1px solid var(--border-h);
+      background:transparent; color:var(--txt3);
+      font-size:11.5px; font-weight:600; font-family:inherit;
+      transition:all .25s; text-align:center;
+    }
+    .orient-btn:hover { background:rgba(255,255,255,.04); color:var(--txt2); }
+    .orient-btn.sel {
+      background:rgba(99,102,241,.12);
+      border-color:rgba(99,102,241,.4);
+      color:var(--accent);
+    }
+    .orient-icon { font-size:16px; display:block; }
 
-    .tip{margin-top:10px;padding:10px 12px;border-radius:8px;
-      background:rgba(6,182,212,.05);border:1px solid rgba(6,182,212,.18);
-      font-size:11px;color:rgba(6,182,212,.8);display:flex;align-items:flex-start;gap:8px;line-height:1.55;}
-
-    /* Webcam panel */
-    .cam{position:relative;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/9;}
-    #liveVideo{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s;}
-    #liveVideo.show{opacity:1;}
-    .cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;gap:12px;background:#06080f;pointer-events:none;}
-    .cam-ph-i{font-size:52px;opacity:.16;}
-    .cam-ph-t{font-size:12px;color:var(--txt3);}
-    .cam-ph.hide{display:none;}
-    .cam-spinner{width:52px;height:52px;border:3.5px solid rgba(99,102,241,.2);
-      border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px;}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .hud{position:absolute;top:9px;left:9px;right:9px;display:flex;
-      justify-content:space-between;pointer-events:none;}
-    .hud-c{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:7px;
-      backdrop-filter:blur(14px);background:rgba(6,8,16,.8);
-      border:1px solid rgba(255,255,255,.09);font-size:10.5px;font-weight:700;color:var(--txt2);}
-    .hd{width:6px;height:6px;border-radius:50%;}
-    .hd.g{background:#ef4444;animation:blink 1.4s ease-in-out infinite;}
+    /* Start/Stop buttons */
+    .main-btn {
+      width:100%; padding:13px; border-radius:11px; border:none;
+      background:var(--grad); color:#fff;
+      font-size:14px; font-weight:800; cursor:pointer;
+      transition:all .25s; font-family:inherit;
+      display:flex; align-items:center; justify-content:center; gap:9px;
+      box-shadow:0 4px 28px rgba(99,102,241,.3);
+      position:relative; overflow:hidden;
+    }
+    .main-btn::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(transparent,rgba(255,255,255,.07));
+      pointer-events:none;
+    }
+    .main-btn:hover { transform:translateY(-1px); box-shadow:0 6px 36px rgba(99,102,241,.45); }
+    .main-btn:active { transform:translateY(0); }
+    .main-btn:disabled { opacity:.3; cursor:not-allowed; pointer-events:none; box-shadow:none; }
+    .stop-btn {
+      width:100%; padding:12px; border-radius:11px;
+      background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.28);
+      color:var(--red); font-size:13.5px; font-weight:700;
+      cursor:pointer; font-family:inherit;
+      display:flex; align-items:center; justify-content:center; gap:9px;
+      transition:all .25s;
+    }
+    .stop-btn:hover { background:rgba(239,68,68,.18); }
 
     /* Stats */
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
-    .stat{padding:10px 8px;border-radius:8px;background:rgba(255,255,255,.025);
-      border:1px solid var(--border);text-align:center;}
-    .stat-v{font-size:16px;font-weight:800;background:var(--grad);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      background-clip:text;line-height:1;font-variant-numeric:tabular-nums;}
-    .stat-l{font-size:9px;font-weight:600;color:var(--txt3);letter-spacing:.06em;margin-top:2px;}
+    .stat-row { display:flex; gap:6px; }
+    .stat-card {
+      flex:1; padding:9px 6px; border-radius:8px; text-align:center;
+      background:rgba(255,255,255,.028); border:1px solid var(--border);
+    }
+    .stat-v {
+      font-size:15px; font-weight:800; line-height:1;
+      background:var(--grad); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+      font-variant-numeric:tabular-nums;
+    }
+    .stat-l { font-size:8.5px; font-weight:700; letter-spacing:.06em; color:var(--txt3); margin-top:2px; }
 
-    .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
-      padding:12px;border-radius:10px;border:none;background:var(--grad);color:#fff;
-      font-size:13.5px;font-weight:700;cursor:pointer;transition:all .25s;
-      margin-top:12px;position:relative;overflow:hidden;font-family:inherit;}
-    .btn:hover{opacity:.9;} .btn:active{transform:scale(.975);}
-    .btn:disabled{opacity:.32;cursor:not-allowed;pointer-events:none;}
-    .btn.stop{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:var(--red);}
-    .btn.stop:hover{background:rgba(239,68,68,.2);}
+    /* Error */
+    .err-box {
+      padding:10px 12px; border-radius:9px;
+      background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.2);
+      font-size:11.5px; color:#fca5a5; line-height:1.5;
+      display:none;
+    }
+    .err-box.show { display:block; }
 
-    /* Error box */
-    .err-box{margin-top:10px;padding:10px 13px;border-radius:9px;
-      background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);
-      font-size:11.5px;color:#fca5a5;display:none;align-items:flex-start;gap:8px;line-height:1.55;}
-    .err-box.show{display:flex;}
+    /* ── RIGHT: VIDEO AREA ────────────────────────────── */
+    .video-area {
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:20px 28px;
+      gap:14px;
+      background:transparent;
+      overflow:hidden;
+    }
 
-    /* Toast */
-    .toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:10px;
-      background:rgba(11,15,26,.96);border:1px solid var(--border);backdrop-filter:blur(24px);
-      font-size:12px;font-weight:500;color:var(--txt);z-index:999;
-      display:flex;align-items:center;gap:8px;
-      transform:translateY(70px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);
-      max-width:300px;pointer-events:none;}
-    .toast.show{transform:translateY(0);opacity:1;}
-    .toast.ok{border-color:rgba(16,185,129,.3);color:#86efac;}
-    .toast.err{border-color:rgba(239,68,68,.3);color:#fca5a5;}
+    .video-stage {
+      position:relative;
+      border-radius:16px;
+      overflow:hidden;
+      background:#000;
+      box-shadow:0 0 0 1px var(--border), 0 24px 80px rgba(0,0,0,.6);
+      transition:box-shadow .4s, width .4s, height .4s;
+      /* sizing handled by JS */
+      max-width:100%;
+      max-height:calc(100vh - 180px);
+    }
+    .video-stage.live-glow {
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,.4),
+        0 0 0 4px rgba(99,102,241,.1),
+        0 24px 80px rgba(99,102,241,.3);
+      animation:stageGlow 2.5s ease-in-out infinite alternate;
+    }
+    @keyframes stageGlow {
+      from { box-shadow:0 0 0 1px rgba(99,102,241,.3),0 0 0 4px rgba(99,102,241,.08),0 20px 60px rgba(99,102,241,.2); }
+      to   { box-shadow:0 0 0 1px rgba(99,102,241,.55),0 0 0 6px rgba(99,102,241,.14),0 30px 100px rgba(99,102,241,.4); }
+    }
+
+    #liveVideo {
+      width:100%; height:100%;
+      object-fit:cover; display:block;
+      opacity:0; transition:opacity .6s;
+    }
+    #liveVideo.show { opacity:1; }
+
+    /* Placeholder overlay */
+    .vid-ph {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:10px;
+      background:linear-gradient(145deg,#0a0e1a,#070a12);
+    }
+    .vid-ph.hide { display:none; }
+    .vid-ph-icon { font-size:56px; opacity:.12; }
+    .vid-ph-txt  { font-size:12px; color:var(--txt3); font-weight:500; }
+
+    /* Connecting spinner */
+    .vid-loading {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:12px;
+      background:rgba(6,8,16,.92);
+    }
+    .vid-loading.hide { display:none; }
+    .spinner {
+      width:48px; height:48px;
+      border:3.5px solid rgba(99,102,241,.2);
+      border-top-color:var(--accent);
+      border-radius:50%;
+      animation:spin .75s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spinner-txt { font-size:11.5px; color:var(--txt2); font-weight:500; }
+
+    /* HUD overlay */
+    .vid-hud {
+      position:absolute; top:10px; left:10px; right:10px;
+      display:flex; justify-content:space-between; pointer-events:none;
+    }
+    .hud-pill {
+      display:flex; align-items:center; gap:5px;
+      padding:4px 10px; border-radius:7px;
+      backdrop-filter:blur(16px);
+      background:rgba(6,8,16,.82);
+      border:1px solid rgba(255,255,255,.1);
+      font-size:10px; font-weight:700; color:var(--txt2);
+    }
+    .live-ind { width:6px; height:6px; border-radius:50%; background:#ef4444; animation:blink 1.2s ease-in-out infinite; }
+
+    /* Bottom video controls bar */
+    .vid-controls {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
+    }
+    .vc-info {
+      display:flex; align-items:center; gap:10px;
+      padding:8px 16px; border-radius:100px;
+      background:rgba(255,255,255,.04); border:1px solid var(--border);
+      font-size:11px; color:var(--txt2);
+    }
+    .vc-sep { width:1px; height:14px; background:var(--border); }
+
+    /* ── TOAST ───────────────────────────────────────── */
+    .toast {
+      position:fixed; bottom:20px; right:20px;
+      padding:10px 16px; border-radius:10px;
+      background:rgba(11,15,26,.96); border:1px solid var(--border);
+      backdrop-filter:blur(24px);
+      font-size:12px; font-weight:500; color:var(--txt);
+      z-index:999; display:flex; align-items:center; gap:8px;
+      transform:translateY(70px); opacity:0;
+      transition:all .4s cubic-bezier(.34,1.56,.64,1);
+      max-width:320px; pointer-events:none;
+    }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.ok  { border-color:rgba(16,185,129,.35); color:#86efac; }
+    .toast.err { border-color:rgba(239,68,68,.35);  color:#fca5a5; }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media(max-width:780px) {
+      .app { grid-template-columns:1fr; grid-template-rows:auto 1fr; height:auto; }
+      .sidebar { border-right:none; border-bottom:1px solid var(--border); max-height:65vh; }
+      .video-area { padding:16px; min-height:50vh; }
+    }
   </style>
 </head>
 <body>
 
+<!-- ── HEADER ──────────────────────────────────────────────────── -->
 <header class="hdr">
   <a class="logo" href="#">
     <div class="logo-orb">✨</div>
     <span class="logo-name">LiveSwap</span>
   </a>
-  <div class="pill amber" id="gPill"><span class="dot"></span><span id="gTxt">No API Key</span></div>
+  <div class="hdr-right">
+    <div style="font-size:10.5px;color:var(--txt3);display:flex;align-items:center;gap:5px;">
+      <span>⚡</span> Powered by <strong style="color:var(--txt2)">Decart lucy-2.1</strong>
+    </div>
+    <div class="status-pill sp-idle" id="statusPill">
+      <span class="live-dot"></span>
+      <span id="statusTxt">Idle</span>
+    </div>
+  </div>
 </header>
 
-<main class="main">
-  <section class="hero">
-    <div class="hero-tag">✦ Decart lucy-2.1 · Real-Time Neural AI · WebRTC Stream</div>
-    <h1>True Neural <span>AI Face Swap</span></h1>
-    <p class="hero-sub">Powered by Decart's cloud GPU — your webcam is processed frame-by-frame by a real video diffusion model. No client-side math tricks.</p>
-    <div class="tech-pills">
-      <span class="tech-pill">🧠 Decart lucy-2.1 Model</span>
-      <span class="tech-pill">📡 WebRTC Streaming</span>
-      <span class="tech-pill">⚡ Real-Time Diffusion</span>
-      <span class="tech-pill">☁️ Cloud GPU</span>
+<!-- ── APP GRID ────────────────────────────────────────────────── -->
+<div class="app">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Upload -->
+    <div class="s-section">
+      <div class="s-label">🖼 Target Face</div>
+
+      <div class="drop" id="dropZone">
+        <input type="file" id="photoFile" accept="image/*" />
+        <span class="drop-ico">👤</span>
+        <div class="drop-t">Drop your photo here</div>
+        <div class="drop-s">JPG · PNG · WEBP · max 10MB</div>
+      </div>
+
+      <div id="prevWrap" style="display:none;margin-top:10px;">
+        <div class="photo-preview">
+          <img id="prevImg" src="" alt="Uploaded face" />
+          <div class="photo-overlay">
+            <span class="ok-chip">✓ Ready</span>
+            <label class="change-btn">
+              <input type="file" id="changeFile" accept="image/*" />↺ Change
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prompt -->
+    <div class="s-section">
+      <div class="s-label">✍️ AI Prompt</div>
+      <textarea id="promptInput" class="prompt-ta" rows="3"
+        placeholder="Describe the transformation…">Swap the face in the video with the uploaded face image exactly</textarea>
+    </div>
+
+    <!-- Orientation -->
+    <div class="s-section">
+      <div class="s-label">📐 Output Orientation</div>
+      <div class="orient-toggle">
+        <button class="orient-btn sel" id="oLand" data-orient="landscape">
+          <span class="orient-icon">⬜</span>Landscape
+        </button>
+        <button class="orient-btn" id="oPport" data-orient="portrait">
+          <span class="orient-icon" style="transform:rotate(90deg)">▬</span>Portrait
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="s-section" id="statsSection" style="display:none;">
+      <div class="s-label">📊 Session Stats</div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-v" id="sDur">0s</div><div class="stat-l">DURATION</div></div>
+        <div class="stat-card"><div class="stat-v">2.1</div><div class="stat-l">MODEL</div></div>
+        <div class="stat-card"><div class="stat-v" id="sState">—</div><div class="stat-l">STATE</div></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="s-section">
+      <div class="err-box" id="errBox"></div>
+    </div>
+
+    <!-- Action buttons (pinned to bottom via flex) -->
+    <div class="s-section" style="margin-top:auto;">
+      <button class="main-btn" id="streamBtn" disabled>
+        ▶ &nbsp;Start AI Face Swap
+      </button>
+      <button class="stop-btn" id="stopBtn" style="display:none;margin-top:8px;">
+        ■ &nbsp;Stop Stream
+      </button>
+      <div style="margin-top:10px;padding:9px 10px;border-radius:8px;
+        background:rgba(6,182,212,.05);border:1px solid rgba(6,182,212,.15);
+        font-size:10.5px;color:rgba(6,182,212,.75);line-height:1.55;display:flex;gap:7px;">
+        <span style="flex-shrink:0">💡</span>
+        Use a clear, front-facing photo for best results. The AI runs on cloud GPUs in real-time.
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- RIGHT: VIDEO OUTPUT -->
+  <section class="video-area" id="videoArea">
+    <div class="video-stage" id="videoStage">
+      <video id="liveVideo" autoplay playsinline muted></video>
+
+      <!-- Idle placeholder -->
+      <div class="vid-ph" id="vidPh">
+        <div class="vid-ph-icon">🎭</div>
+        <div class="vid-ph-txt">Upload a face &amp; click Start</div>
+      </div>
+
+      <!-- Connecting -->
+      <div class="vid-loading hide" id="vidLoading">
+        <div class="spinner"></div>
+        <div class="spinner-txt">Connecting to Decart AI…</div>
+      </div>
+
+      <!-- Live HUD -->
+      <div class="vid-hud" id="vidHud" style="display:none;">
+        <div class="hud-pill"><div class="live-ind"></div>LIVE · AI SWAP</div>
+        <div class="hud-pill" id="hudTimer">0s</div>
+      </div>
+    </div>
+
+    <!-- Bottom info bar -->
+    <div class="vid-controls">
+      <div class="vc-info">
+        <span>☁️ Decart Cloud GPU</span>
+        <div class="vc-sep"></div>
+        <span>lucy-2.1 Model</span>
+        <div class="vc-sep"></div>
+        <span>WebRTC Stream</span>
+        <div class="vc-sep"></div>
+        <span id="orientLabel">🖥 Landscape</span>
+      </div>
     </div>
   </section>
 
-  <!-- API Key Banner -->
-  <div class="api-banner">
-    <div class="api-banner-left">
-      <div class="api-banner-ico">🔑</div>
-      <div class="api-banner-text">
-        <strong>Decart API Key Required</strong>
-        <span>Get a free key at <a href="https://platform.decart.ai" target="_blank">platform.decart.ai</a> — ~free credits on signup</span>
-      </div>
-    </div>
-    <div class="api-input-wrap">
-      <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-decart-xxxxxxxxxxxx" autocomplete="off" />
-      <button class="api-save-btn" id="apiSaveBtn">Save Key</button>
-    </div>
-  </div>
-
-  <div class="grid">
-    <!-- LEFT: Controls -->
-    <div class="panel" id="leftPanel">
-      <div class="panel-head">
-        <div class="panel-title"><div class="p-ico">📸</div>Target Face</div>
-        <span class="badge b-idle" id="pBadge">No photo</span>
-      </div>
-      <div class="panel-body">
-        <!-- Drop zone -->
-        <div class="drop" id="dropZone">
-          <input type="file" id="photoFile" accept="image/*" />
-          <span class="drop-ico">🖼️</span>
-          <div class="drop-t">Drop face photo here</div>
-          <div class="drop-s">or click to browse · JPG, PNG, WEBP · max 10MB</div>
-        </div>
-
-        <!-- Preview -->
-        <div id="prevWrap" style="display:none">
-          <div class="photo-box">
-            <img id="prevImg" src="" alt="Uploaded photo" />
-            <div class="photo-cap">
-              <span class="photo-cpill">✓ Face ready</span>
-            </div>
-          </div>
-          <label class="btn-change">
-            <input type="file" id="changeFile" accept="image/*" />↺ &nbsp;Change Photo
-          </label>
-        </div>
-
-        <!-- Prompt -->
-        <div class="field-label">AI Prompt</div>
-        <textarea id="promptInput" class="prompt-area" rows="3"
-          placeholder="Describe the transformation...">Swap the face in the video with the uploaded face image exactly</textarea>
-
-        <!-- Steps -->
-        <div class="steps">
-          <div class="step" id="st1"><div class="step-n">1</div><span class="step-l">Enter Decart API key</span></div>
-          <div class="step" id="st2"><div class="step-n">2</div><span class="step-l">Upload a clear face photo</span></div>
-          <div class="step" id="st3"><div class="step-n">3</div><span class="step-l">Start stream — GPU AI swap goes live</span></div>
-        </div>
-
-        <div class="tip"><span style="flex-shrink:0">💡</span>Use a front-facing, well-lit photo. The AI model runs on Decart's cloud GPUs — no local processing needed. Costs ~$0.02/second of streaming.</div>
-      </div>
-    </div>
-
-    <!-- RIGHT: Stream output -->
-    <div class="panel" id="rightPanel">
-      <div class="panel-head">
-        <div class="panel-title"><div class="p-ico">🎥</div>Live AI Output</div>
-        <span class="badge b-idle" id="cBadge">Offline</span>
-      </div>
-      <div class="panel-body">
-        <div class="cam">
-          <video id="liveVideo" autoplay playsinline muted></video>
-          <div class="cam-ph" id="camPh">
-            <span class="cam-ph-i">📷</span>
-            <span class="cam-ph-t">Stream not started</span>
-          </div>
-          <div class="cam-ph hide" id="camLoading">
-            <div class="cam-spinner"></div>
-            <span class="cam-ph-t">Connecting to Decart AI…</span>
-          </div>
-          <div class="hud" id="hud" style="display:none">
-            <div class="hud-c"><div class="hd g"></div>LIVE · AI</div>
-            <div class="hud-c" id="timerBadge">0s</div>
-          </div>
-        </div>
-
-        <div class="stats" id="statsRow" style="display:none">
-          <div class="stat"><div class="stat-v" id="sDur">0s</div><div class="stat-l">DURATION</div></div>
-          <div class="stat"><div class="stat-v" id="sModel">lucy-2.1</div><div class="stat-l">MODEL</div></div>
-          <div class="stat"><div class="stat-v" id="sState">—</div><div class="stat-l">STATE</div></div>
-        </div>
-
-        <div class="err-box" id="errBox">⚠️ <span id="errMsg"></span></div>
-
-        <button class="btn" id="streamBtn" disabled>▶ &nbsp;Start AI Stream</button>
-        <button class="btn stop" id="stopBtn" style="display:none">■ &nbsp;Stop Stream</button>
-      </div>
-    </div>
-  </div>
-</main>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script type="module">
-/* ═══════════════════════════════════════════════════════════════
-   LiveSwap — Decart lucy-2.1 Real-Time Neural Face Swap
-   Uses official @decartai/sdk via esm.sh CDN.
-
-   Pipeline:
-     1. User enters Decart API key  
-     2. User uploads face image
-     3. Click Start → getUserMedia → createDecartClient  
-        → client.realtime.connect(webcam, { model: lucy-2.1, image, prompt })
-     4. Decart GPU processes webcam frames on their server
-     5. Transformed video stream returned via WebRTC onRemoteStream
-     6. Show output video in browser — no local processing!
-═══════════════════════════════════════════════════════════════ */
+const DECART_API_KEY = 'dct_livfy_qfWIUObozhkvqhdXLZDsVGOHcGdxgHUPIzgthmxnwfdmmEmdTqxcibAVVhyYwXwC';
 
 import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
 
-// ── DOM ──────────────────────────────────────────────────────────
+// ── DOM ───────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const gPill      = $('gPill');
-const gTxt       = $('gTxt');
-const apiKeyInput= $('apiKeyInput');
-const apiSaveBtn = $('apiSaveBtn');
-const dropZone   = $('dropZone');
-const photoFile  = $('photoFile');
-const changeFile = $('changeFile');
-const prevWrap   = $('prevWrap');
-const prevImg    = $('prevImg');
-const pBadge     = $('pBadge');
-const promptInput= $('promptInput');
-const liveVideo  = $('liveVideo');
-const camPh      = $('camPh');
-const camLoading = $('camLoading');
-const hud        = $('hud');
-const statsRow   = $('statsRow');
-const timerBadge = $('timerBadge');
-const sDur       = $('sDur');
-const sState     = $('sState');
-const errBox     = $('errBox');
-const errMsg     = $('errMsg');
-const streamBtn  = $('streamBtn');
-const stopBtn    = $('stopBtn');
-const cBadge     = $('cBadge');
-const rightPanel = $('rightPanel');
-const toastEl    = $('toast');
+const dropZone    = $('dropZone');
+const photoFile   = $('photoFile');
+const changeFile  = $('changeFile');
+const prevWrap    = $('prevWrap');
+const prevImg     = $('prevImg');
+const promptInput = $('promptInput');
+const streamBtn   = $('streamBtn');
+const stopBtn     = $('stopBtn');
+const liveVideo   = $('liveVideo');
+const vidPh       = $('vidPh');
+const vidLoading  = $('vidLoading');
+const vidHud      = $('vidHud');
+const hudTimer    = $('hudTimer');
+const statusPill  = $('statusPill');
+const statusTxt   = $('statusTxt');
+const errBox      = $('errBox');
+const statsSection= $('statsSection');
+const sDur        = $('sDur');
+const sState      = $('sState');
+const toastEl     = $('toast');
+const videoStage  = $('videoStage');
+const oLand       = $('oLand');
+const oPport      = $('oPport');
+const orientLabel = $('orientLabel');
 
-// ── State ────────────────────────────────────────────────────────
-const S = {
-  apiKey: localStorage.getItem('decart_api_key') || '',
-  photoBlob: null,
-  photoUrl: null,
-  client: null,
-  realtimeClient: null,
-  camStream: null,
-  streaming: false,
-  timerSec: 0,
-  timerInterval: null,
-};
+// ── State ─────────────────────────────────────────────────────────
+let photoBlob      = null;
+let orient         = 'landscape';   // 'landscape' | 'portrait'
+let streaming      = false;
+let realtimeClient = null;
+let camStream      = null;
+let timerSec       = 0;
+let timerInterval  = null;
 
-// Restore saved key
-if (S.apiKey) {
-  apiKeyInput.value = S.apiKey;
-  updateKeyState(true);
-}
-
-// ── Toast ────────────────────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────────
 let _tt;
-function toast(msg, kind = '', ms = 4000) {
-  toastEl.textContent = ({ ok:'✅ ', err:'❌ ', '':'ℹ️ ' }[kind] || 'ℹ️ ') + msg;
-  toastEl.className = `toast show${kind ? ' ' + kind : ''}`;
+function toast(msg, kind = '', ms = 4200) {
+  const ico = { ok:'✅', err:'❌', '':'ℹ️' };
+  toastEl.textContent = `${ico[kind] ?? 'ℹ️'} ${msg}`;
+  toastEl.className   = `toast show${kind ? ' '+kind : ''}`;
   clearTimeout(_tt);
   _tt = setTimeout(() => toastEl.classList.remove('show'), ms);
 }
 
-// ── Steps ────────────────────────────────────────────────────────
-function step(n, s) {
-  const el = $(`st${n}`);
-  el.className = 'step' + (s === 'active' ? ' active' : s === 'done' ? ' done' : '');
-  el.querySelector('.step-n').textContent = s === 'done' ? '✓' : n;
+// ── Status pill ───────────────────────────────────────────────────
+function setStatus(txt, kind) {
+  statusPill.className = `status-pill ${kind}`;
+  statusTxt.textContent = txt;
 }
 
-// ── API Key ──────────────────────────────────────────────────────
-function updateKeyState(ok) {
-  if (ok) {
-    gPill.className = 'pill blue';
-    gTxt.textContent = 'Key saved';
-    step(1, 'done');
-  } else {
-    gPill.className = 'pill amber';
-    gTxt.textContent = 'No API Key';
-    step(1, '');
-  }
-  refreshBtn();
-}
-
-apiSaveBtn.onclick = () => {
-  const key = apiKeyInput.value.trim();
-  if (!key) { toast('Enter a valid Decart API key', 'err'); return; }
-  S.apiKey = key;
-  localStorage.setItem('decart_api_key', key);
-  toast('API key saved!', 'ok');
-  updateKeyState(true);
-};
-apiKeyInput.addEventListener('keydown', e => { if (e.key === 'Enter') apiSaveBtn.click(); });
-
-// ── Photo upload ─────────────────────────────────────────────────
+// ── Photo upload ──────────────────────────────────────────────────
 function handleFile(f) {
   if (!f || !f.type.startsWith('image/')) return;
   if (f.size > 10 * 1024 * 1024) { toast('Image must be under 10MB', 'err'); return; }
-  S.photoBlob = f;
-  S.photoUrl = URL.createObjectURL(f);
-  prevImg.src = S.photoUrl;
+  photoBlob = f;
+  prevImg.src = URL.createObjectURL(f);
   dropZone.style.display = 'none';
   prevWrap.style.display = 'block';
-  pBadge.textContent = '✓ Ready';
-  pBadge.className = 'badge b-ok';
-  step(2, 'done');
-  toast('Face image loaded!', 'ok');
+  toast('Face photo loaded!', 'ok');
   refreshBtn();
 }
-
-photoFile.addEventListener('change', e => handleFile(e.target.files[0]));
-changeFile.addEventListener('change', e => {
-  if (e.target.files[0]) {
-    dropZone.style.display = 'block';
-    prevWrap.style.display = 'none';
-    handleFile(e.target.files[0]);
-  }
-});
+photoFile.addEventListener('change',  e => handleFile(e.target.files[0]));
+changeFile.addEventListener('change', e => { if (e.target.files[0]) { dropZone.style.display='block'; prevWrap.style.display='none'; handleFile(e.target.files[0]); } });
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('over');
-  handleFile(e.dataTransfer.files[0]);
-});
+dropZone.addEventListener('dragleave',() => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop',     e => { e.preventDefault(); dropZone.classList.remove('over'); handleFile(e.dataTransfer.files[0]); });
 
-// ── Stream enable/disable ─────────────────────────────────────────
-function refreshBtn() {
-  streamBtn.disabled = !S.apiKey || !S.photoBlob;
-  if (!S.streaming) step(3, S.apiKey && S.photoBlob ? 'active' : '');
-}
+// ── Orientation ───────────────────────────────────────────────────
+function sizeStage() {
+  const area    = $('videoArea');
+  const aw      = area.clientWidth  - 56;
+  const ah      = area.clientHeight - 80;
 
-// ── Show / hide states ───────────────────────────────────────────
-function showError(msg) {
-  errMsg.textContent = msg;
-  errBox.classList.add('show');
-}
-function clearError() { errBox.classList.remove('show'); }
-
-function setLiveUI(on) {
-  hud.style.display = on ? 'flex' : 'none';
-  statsRow.style.display = on ? 'grid' : 'none';
-  liveVideo.classList.toggle('show', on);
-  camPh.classList.toggle('hide', on);
-  camLoading.classList.add('hide');
-  if (on) rightPanel.classList.add('active');
-  else rightPanel.classList.remove('active');
-}
-
-function setLoadingUI(on) {
-  camLoading.classList.toggle('hide', !on);
-  camPh.classList.toggle('hide', on);
-  if (on) {
-    cBadge.textContent = 'Connecting…';
-    cBadge.className = 'badge b-busy';
+  if (orient === 'landscape') {
+    // 16:9
+    let w = aw, h = w * 9/16;
+    if (h > ah) { h = ah; w = h * 16/9; }
+    videoStage.style.width  = `${Math.round(w)}px`;
+    videoStage.style.height = `${Math.round(h)}px`;
+  } else {
+    // 9:16
+    let h = ah, w = h * 9/16;
+    if (w > aw) { w = aw; h = w * 16/9; }
+    videoStage.style.width  = `${Math.round(w)}px`;
+    videoStage.style.height = `${Math.round(h)}px`;
   }
 }
 
+[oLand, oPport].forEach(btn => {
+  btn.addEventListener('click', () => {
+    orient = btn.dataset.orient;
+    oLand.classList.toggle('sel',  orient === 'landscape');
+    oPport.classList.toggle('sel', orient === 'portrait');
+    orientLabel.textContent = orient === 'landscape' ? '🖥 Landscape' : '📱 Portrait';
+    sizeStage();
+  });
+});
+
+window.addEventListener('resize', sizeStage);
+sizeStage();
+
+// ── Stream toggle ─────────────────────────────────────────────────
+function refreshBtn() {
+  streamBtn.disabled = !photoBlob;
+}
+
+// ── Timer ─────────────────────────────────────────────────────────
 function startTimer() {
-  S.timerSec = 0;
-  clearInterval(S.timerInterval);
-  S.timerInterval = setInterval(() => {
-    S.timerSec++;
-    const t = fmtTime(S.timerSec);
-    timerBadge.textContent = t;
-    sDur.textContent = t;
+  timerSec = 0;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timerSec++;
+    const t = fmt(timerSec);
+    hudTimer.textContent = t;
+    sDur.textContent     = t;
   }, 1000);
 }
+function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
+function fmt(s) { return s < 60 ? `${s}s` : `${Math.floor(s/60)}m ${s%60}s`; }
 
-function stopTimer() {
-  clearInterval(S.timerInterval);
-  S.timerInterval = null;
-}
+// ── Error ─────────────────────────────────────────────────────────
+function showErr(msg) { errBox.textContent = '⚠️ ' + msg; errBox.classList.add('show'); }
+function clearErr()   { errBox.textContent = ''; errBox.classList.remove('show'); }
 
-function fmtTime(s) {
-  if (s < 60) return `${s}s`;
-  return `${Math.floor(s/60)}m ${s%60}s`;
-}
-
-// ── Start Streaming ───────────────────────────────────────────────
+// ── START STREAM ──────────────────────────────────────────────────
 async function startStream() {
-  clearError();
+  clearErr();
+  streaming = true;
   streamBtn.style.display = 'none';
-  stopBtn.style.display = 'flex';
-  setLoadingUI(true);
-  step(3, 'active');
+  stopBtn.style.display   = 'flex';
+  vidLoading.classList.remove('hide');
+  vidPh.classList.add('hide');
+  sizeStage();
+  setStatus('Connecting…', 'sp-live');
   sState.textContent = 'Connecting';
-  gPill.className = 'pill amber';
-  gTxt.textContent = 'Connecting…';
-  S.streaming = true;
 
   try {
-    // 1. Initialise Decart model
     const model = models.realtime('lucy-2.1');
 
-    // 2. Determine frameRate options
-    const fpsOpts = typeof model.fps === 'object'
-      ? { ideal: model.fps.ideal, max: model.fps.max }
-      : { ideal: model.fps };
-
-    // 3. Get webcam
-    S.camStream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: model.width }, height: { ideal: model.height }, frameRate: fpsOpts },
+    // Camera constraints based on orientation
+    const isPort = orient === 'portrait';
+    const camConstraints = {
+      video: {
+        width:     { ideal: isPort ? model.height : model.width  },
+        height:    { ideal: isPort ? model.width  : model.height },
+        frameRate: typeof model.fps === 'object'
+          ? { ideal: model.fps.ideal, max: model.fps.max }
+          : { ideal: model.fps },
+        facingMode: 'user',
+      },
       audio: false,
-    });
+    };
 
-    // 4. Initialise Decart client
-    S.client = createDecartClient({ apiKey: S.apiKey });
+    camStream = await navigator.mediaDevices.getUserMedia(camConstraints);
 
-    // 5. Prepare face image blob
-    const imageBlob = new Blob([await S.photoBlob.arrayBuffer()], { type: S.photoBlob.type });
+    const client      = createDecartClient({ apiKey: DECART_API_KEY });
+    const imageBlob   = new Blob([await photoBlob.arrayBuffer()], { type: photoBlob.type });
 
-    // 6. Connect to Decart realtime
-    S.realtimeClient = await S.client.realtime.connect(S.camStream, {
+    realtimeClient = await client.realtime.connect(camStream, {
       model,
       mirror: 'auto',
       onRemoteStream: (remoteStream) => {
-        // GPU-processed face-swapped video stream arrives here
         liveVideo.srcObject = remoteStream;
         liveVideo.play().catch(console.error);
-        setLiveUI(true);
+        liveVideo.classList.add('show');
+
+        // UI — live
+        vidLoading.classList.add('hide');
+        vidPh.classList.add('hide');
+        vidHud.style.display = 'flex';
+        videoStage.classList.add('live-glow');
+        statsSection.style.display = 'block';
         startTimer();
-        cBadge.textContent = 'Live · AI';
-        cBadge.className = 'badge b-live';
-        gPill.className = 'pill green';
-        gTxt.textContent = 'Swap active';
+        setStatus('AI Swap Live', 'sp-ok');
         sState.textContent = 'Streaming';
-        step(3, 'done');
-        toast('🎭 Real AI face swap is live!', 'ok');
+        toast('🎭 AI face swap is live!', 'ok');
       },
       onConnectionChange: (state) => {
-        console.log('Decart connection state:', state);
+        console.log('[Decart] state:', state);
         sState.textContent = state;
         if (state === 'disconnected' || state === 'failed') {
-          stopStream('Connection lost');
+          stopStream('Connection lost — please retry.');
         }
       },
       initialState: {
@@ -584,68 +686,55 @@ async function startStream() {
       },
     });
 
-    S.realtimeClient.on('error', (err) => {
-      console.error('Decart error:', err);
+    realtimeClient.on('error', err => {
       stopStream(err?.message || 'Streaming error');
     });
 
   } catch (err) {
-    console.error('Failed to start stream:', err);
-    const msg = err?.message || 'Failed to start. Check your API key and camera permissions.';
-    showError(msg);
+    console.error('[LiveSwap] start error:', err);
+    const msg = err?.message || 'Failed to start. Check camera permissions.';
+    showErr(msg);
     toast(msg, 'err', 7000);
     stopStream();
   }
 }
 
-// ── Stop Streaming ───────────────────────────────────────────────
+// ── STOP STREAM ───────────────────────────────────────────────────
 async function stopStream(errMessage) {
-  S.streaming = false;
+  streaming = false;
   stopTimer();
   streamBtn.style.display = 'flex';
-  stopBtn.style.display = 'none';
+  stopBtn.style.display   = 'none';
 
-  // Disconnect Decart
-  try { S.realtimeClient?.disconnect?.(); } catch (_) {}
-  S.realtimeClient = null;
+  try { realtimeClient?.disconnect?.(); } catch (_) {}
+  realtimeClient = null;
 
-  // Stop webcam
-  try { S.camStream?.getTracks().forEach(t => t.stop()); } catch (_) {}
-  S.camStream = null;
+  try { camStream?.getTracks().forEach(t => t.stop()); } catch (_) {}
+  camStream = null;
 
-  // Reset video
   liveVideo.srcObject = null;
   liveVideo.classList.remove('show');
-
-  setLiveUI(false);
-  setLoadingUI(false);
-  camPh.classList.remove('hide');
-
-  cBadge.textContent = 'Offline';
-  cBadge.className = 'badge b-idle';
-  gPill.className = 'pill blue';
-  gTxt.textContent = 'Key saved';
+  vidHud.style.display = 'none';
+  vidLoading.classList.add('hide');
+  vidPh.classList.remove('hide');
+  videoStage.classList.remove('live-glow');
   sState.textContent = '—';
-  sDur.textContent = '0s';
-  step(3, S.apiKey && S.photoBlob ? 'active' : '');
+  sDur.textContent   = '0s';
+  setStatus('Idle', 'sp-idle');
 
-  if (errMessage) {
-    showError(errMessage);
-    toast(errMessage, 'err', 6000);
-  } else {
-    toast('Stream stopped.', '', 2500);
-  }
+  if (errMessage) { showErr(errMessage); toast(errMessage, 'err', 6000); }
+  else toast('Stream stopped.', '', 2200);
 
-  streamBtn.disabled = !S.apiKey || !S.photoBlob;
+  refreshBtn();
 }
 
 streamBtn.addEventListener('click', startStream);
-stopBtn.addEventListener('click', () => stopStream());
+stopBtn.addEventListener('click',  () => stopStream());
 
-// Initial state
-step(1, S.apiKey ? 'done' : '');
-step(2, '');
-step(3, '');
+// Init
+if (!DECART_API_KEY || DECART_API_KEY === 'PASTE_YOUR_DECART_API_KEY_HERE') {
+  showErr('⚠️ Add your Decart API key to the DECART_API_KEY constant at the top of the script.');
+}
 refreshBtn();
 </script>
 </body>

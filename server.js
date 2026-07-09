@@ -83,7 +83,7 @@ app.get('/api/health', (req, res) => {
 
 // Serve Firebase config securely
 app.get('/api/firebase-config', (req, res) => {
-  res.json({
+  const config = {
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
     projectId: process.env.FIREBASE_PROJECT_ID,
@@ -91,7 +91,16 @@ app.get('/api/firebase-config', (req, res) => {
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID
-  });
+  };
+  
+  // Check if all required config values are present
+  if (!config.apiKey || !config.projectId || !config.appId) {
+    console.error('Missing Firebase configuration:', config);
+    return res.status(500).json({ error: 'Firebase configuration incomplete' });
+  }
+  
+  console.log('Serving Firebase config for project:', config.projectId);
+  res.json(config);
 });
 
 // Verify Firebase token

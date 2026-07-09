@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Livfy — AI Image &amp; Video Generation</title>
+  <meta name="description" content="Generate AI-powered image-to-image, image-to-video, and video-to-video transformations with Livfy." />
+  <link rel="icon" type="image/png" href="image/webicon.png" />
+  <link rel="apple-touch-icon" href="image/webicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#05051a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    
+    window.firebaseApp = initializeApp;
+    window.firebaseAuth = getAuth;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.signOut = signOut;
+  </script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#05051a;
+      --card:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.08);
+      --border-h:rgba(255,255,255,.14);
+      --txt:#f0f4ff;
+      --txt2:rgba(240,244,255,.62);
+      --txt3:rgba(240,244,255,.38);
+      --pink:#ff2d6f;
+      --violet:#c084fc;
+      --cyan:#00c8ff;
+      --accent:var(--pink);
+      --accent2:var(--violet);
+      --green:#10b981; --amber:#f59e0b; --red:#ef4444;
+      --grad:linear-gradient(135deg,#ff2d6f,#c084fc 50%,#00c8ff);
+      --grad-soft:linear-gradient(135deg,rgba(255,45,111,.12),rgba(0,200,255,.08));
+    }
+    html, body { height:100%; }
+    body {
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 15% 0%,rgba(255,45,111,.07) 0,transparent 60%),
+        radial-gradient(ellipse 60% 45% at 85% 95%,rgba(0,200,255,.05) 0,transparent 60%);
+      color:var(--txt);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ── HEADER ──────────────────────────────────────── */
+    .hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 28px; height:80px;
+      background:rgba(5,5,26,.92); backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:300;
+    }
+    .hdr::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,45,111,.35),rgba(0,200,255,.35),transparent);
+      pointer-events:none;
+    }
+    .logo { display:flex; align-items:center; text-decoration:none; }
+    .logo-img { height:68px; width:auto; object-fit:contain; display:block; }
+    .nav { display:flex; align-items:center; gap:4px; }
+    .nav a {
+      display:flex; align-items:center; gap:6px;
+      padding:6px 14px; border-radius:8px;
+      text-decoration:none; font-size:13px; font-weight:600;
+      color:var(--txt2); transition:all .2s;
+    }
+    .nav a:hover { background:rgba(255,255,255,.06); color:var(--txt); }
+    .nav a.active {
+      background:rgba(255,45,111,.1); border:1px solid rgba(255,45,111,.28);
+      color:var(--pink);
+    }
+    .hdr-right { display:flex; align-items:center; gap:10px; }
+
+    /* ── MAIN ────────────────────────────────────────── */
+    .main { max-width:1280px; margin:0 auto; padding:36px 28px 80px; }
+
+    /* ── HERO ────────────────────────────────────────── */
+    .hero { text-align:center; margin-bottom:36px; }
+    .hero-tag {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:5px 15px; border-radius:100px;
+      background:rgba(255,45,111,.08); border:1px solid rgba(255,45,111,.22);
+      font-size:10.5px; font-weight:700; color:var(--pink);
+      letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px;
+    }
+    h1 {
+      font-size:clamp(28px,4.5vw,50px); font-weight:900;
+      letter-spacing:-.035em; line-height:1.1; margin-bottom:10px;
+    }
+    h1 span {
+      background:var(--grad); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .hero-sub {
+      font-size:15px; color:var(--txt2); max-width:520px;
+      margin:0 auto; line-height:1.65;
+    }
+
+    /* ── MODE TABS ───────────────────────────────────── */
+    .mode-tabs {
+      display:flex; gap:6px; justify-content:center;
+      margin-bottom:32px; flex-wrap:wrap;
+    }
+    .mode-tab {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 22px; border-radius:11px;
+      border:1px solid var(--border-h);
+      background:rgba(255,255,255,.025);
+      color:var(--txt2); font-size:13px; font-weight:600;
+      cursor:pointer; transition:all .3s; font-family:inherit;
+      position:relative; overflow:hidden;
+    }
+    .mode-tab::before {
+      content:''; position:absolute; inset:0;
+      background:var(--grad); opacity:0;
+      transition:opacity .3s; z-index:0;
+    }
+    .mode-tab > * { position:relative; z-index:1; }
+    .mode-tab:hover { border-color:rgba(255,45,111,.3); color:var(--txt); }
+    .mode-tab.sel { border-color:rgba(255,45,111,.5); color:#fff; }
+    .mode-tab.sel::before { opacity:.18; }
+    .mode-ico { width:20px; height:20px; }
+    .mode-tag {
+      padding:2px 7px; border-radius:5px;
+      font-size:9px; font-weight:700;
+      letter-spacing:.05em; text-transform:uppercase;
+      background:rgba(255,255,255,.08);
+    }
+    .mode-tab.sel .mode-tag { background:rgba(255,45,111,.25); color:var(--pink); }
+
+    /* ── WORKSPACE ───────────────────────────────────── */
+    .workspace {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:20px; align-items:start;
+    }
+    @media(max-width:860px) { .workspace { grid-template-columns:1fr; } }
+
+    .panel {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:16px; overflow:hidden; backdrop-filter:blur(12px);
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .panel-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:15px 18px 12px; border-bottom:1px solid var(--border);
+    }
+    .panel-title {
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; font-weight:600; color:var(--txt2);
+    }
+    .p-ico {
+      width:24px; height:24px; border-radius:7px;
+      background:rgba(255,45,111,.15);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .p-ico svg { width:14px; height:14px; stroke:var(--accent); }
+    .badge {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 9px; border-radius:100px;
+      font-size:10px; font-weight:700; letter-spacing:.03em;
+    }
+    .badge svg { width:11px; height:11px; flex-shrink:0; }
+    .b-idle  { background:rgba(255,255,255,.05); color:var(--txt3); }
+    .b-ok    { background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.25); color:var(--green); }
+    .b-busy  { background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.25); color:var(--amber); }
+    .b-live  { background:rgba(255,45,111,.1); border:1px solid rgba(255,45,111,.28); color:var(--pink); }
+    .panel-body { padding:18px; }
+
+    /* ── UPLOAD ZONES ────────────────────────────────── */
+    .drop {
+      border:2px dashed rgba(255,45,111,.2); border-radius:12px;
+      padding:36px 18px; text-align:center; cursor:pointer;
+      transition:all .3s; position:relative; user-select:none;
+      background:rgba(255,45,111,.02);
+    }
+    .drop:hover, .drop.over { border-color:var(--accent); background:rgba(255,45,111,.06); }
+    .drop input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .drop-ico { width:36px; height:36px; display:block; margin:0 auto 8px; transition:transform .35s cubic-bezier(.34,1.56,.64,1); }
+    .drop-ico svg { width:100%; height:100%; stroke:var(--accent); }
+    .drop:hover .drop-ico { transform:translateY(-4px) scale(1.1); }
+    .drop-t { font-size:13px; font-weight:600; color:var(--txt2); margin-bottom:3px; }
+    .drop-s { font-size:10.5px; color:var(--txt3); }
+
+    .media-preview { border-radius:10px; overflow:hidden; position:relative; background:#000; }
+    .media-preview img,
+    .media-preview video { width:100%; max-height:320px; object-fit:contain; display:block; }
+    .media-overlay {
+      position:absolute; bottom:0; left:0; right:0;
+      padding:10px 12px;
+      background:linear-gradient(transparent, rgba(0,0,0,.8));
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .ok-chip {
+      display:flex; align-items:center; gap:5px;
+      padding:3px 9px; border-radius:100px;
+      background:rgba(16,185,129,.25); border:1px solid rgba(16,185,129,.4);
+      font-size:9.5px; font-weight:700; color:var(--green);
+    }
+    .ok-chip svg { width:11px; height:11px; flex-shrink:0; }
+    .change-btn {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:4px 10px; border-radius:7px; border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.08); color:var(--txt2);
+      font-size:10px; font-weight:600; cursor:pointer;
+      transition:all .2s; position:relative; font-family:inherit;
+    }
+    .change-btn input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .change-btn:hover { background:rgba(255,255,255,.14); color:var(--txt); }
+
+    .field-label {
+      font-size:9.5px; font-weight:700; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--txt3);
+      margin-top:16px; margin-bottom:6px;
+      display:flex; align-items:center; gap:7px;
+    }
+    .field-label::after { content:''; flex:1; height:1px; background:var(--border); }
+    .prompt-ta {
+      width:100%; padding:10px 12px; border-radius:9px;
+      border:1px solid var(--border-h);
+      background:rgba(6,8,16,.7); color:var(--txt);
+      font-size:12px; font-family:inherit; resize:none; min-height:80px;
+      transition:border-color .2s; line-height:1.55;
+    }
+    .prompt-ta:focus { outline:none; border-color:rgba(255,45,111,.45); }
+
+    .settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    .setting { display:flex; flex-direction:column; gap:4px; }
+    .setting label { font-size:10px; font-weight:600; color:var(--txt3); letter-spacing:.04em; text-transform:uppercase; }
+    .setting select { padding:8px 10px; border-radius:8px; border:1px solid var(--border-h); background:rgba(6,8,16,.7); color:var(--txt); font-size:12px; font-family:inherit; transition:border-color .2s; }
+    .setting select:focus { outline:none; border-color:rgba(255,45,111,.45); }
+    .setting select option { background:#0b0f1a; }
+    .range-row { display:flex; align-items:center; gap:10px; }
+    .range-row input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--border-h); border-radius:2px; border:none; padding:0; }
+    .range-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--accent); border-radius:50%; cursor:pointer; box-shadow:0 0 8px rgba(255,45,111,.5); }
+    .range-val { font-size:12px; font-weight:700; color:var(--accent); min-width:32px; text-align:right; font-variant-numeric:tabular-nums; }
+
+    .mode-info { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+    .mi-pill { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:100px; background:rgba(255,255,255,.03); border:1px solid var(--border); font-size:10px; font-weight:600; color:var(--txt3); }
+    .mi-pill svg { width:10px; height:10px; flex-shrink:0; opacity:.7; }
+
+    .gen-btn {
+      width:100%; padding:14px; border-radius:11px; border:none;
+      background:var(--grad); color:#fff;
+      font-size:14px; font-weight:800; cursor:pointer;
+      transition:all .25s; font-family:inherit;
+      display:flex; align-items:center; justify-content:center; gap:9px;
+      box-shadow:0 2px 16px rgba(255,45,111,.25);
+      position:relative; overflow:hidden; margin-top:18px;
+    }
+    .gen-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(transparent,rgba(255,255,255,.07)); pointer-events:none; }
+    .gen-btn:hover { transform:translateY(-1px); box-shadow:0 4px 24px rgba(255,45,111,.35); }
+    .gen-btn:active { transform:translateY(0); }
+    .gen-btn:disabled { opacity:.3; cursor:not-allowed; pointer-events:none; box-shadow:none; }
+
+    /* ── OUTPUT PANEL ─────────────────────────────────── */
+    .output-stage {
+      border-radius:12px; overflow:hidden;
+      background:linear-gradient(145deg,#0a0e1a,#070a12);
+      border:1px solid var(--border);
+      min-height:340px;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      position:relative;
+      transition:border-color .4s;
+    }
+    .output-stage.has-result { border-color:rgba(255,45,111,.3); }
+    .output-stage img,
+    .output-stage video { width:100%; max-height:540px; object-fit:contain; display:block; }
+    .out-ph { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:40px 20px; }
+    .out-ph.hide { display:none; }
+    .out-ph-ico { width:56px; height:56px; opacity:.15; margin:0 auto; }
+    .out-ph-ico svg { width:100%; height:100%; stroke:var(--txt3); }
+    .out-ph-txt { font-size:12px; color:var(--txt3); font-weight:500; text-align:center; line-height:1.6; }
+    .gen-progress { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:rgba(6,8,16,.92); z-index:10; }
+    .gen-progress.hide { display:none; }
+    .spinner { width:44px; height:44px; border:3.5px solid rgba(255,45,111,.2); border-top-color:var(--accent); border-radius:50%; animation:spin .75s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .prog-txt { font-size:12px; color:var(--txt2); font-weight:500; text-align:center; max-width:260px; }
+    .prog-bar-wrap { width:200px; height:4px; border-radius:2px; background:rgba(255,255,255,.06); overflow:hidden; }
+    .prog-bar { height:100%; border-radius:2px; background:var(--grad); width:0%; transition:width .6s ease; }
+
+    .output-actions { display:flex; align-items:center; gap:8px; padding:12px; border-top:1px solid var(--border); }
+    .output-actions.hide { display:none; }
+    .dl-btn {
+      flex:1; padding:9px; border-radius:8px; border:none;
+      background:rgba(255,45,111,.12); border:1px solid rgba(255,45,111,.28);
+      color:var(--accent); font-size:12px; font-weight:700;
+      cursor:pointer; font-family:inherit; transition:all .2s;
+      display:flex; align-items:center; justify-content:center; gap:6px;
+    }
+    .dl-btn:hover { background:rgba(255,45,111,.2); }
+    .new-btn {
+      padding:9px 14px; border-radius:8px; border:1px solid var(--border-h);
+      background:transparent; color:var(--txt2);
+      font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;
+      transition:all .2s;
+    }
+    .new-btn:hover { background:rgba(255,255,255,.05); color:var(--txt); }
+
+    .err-box { margin-top:12px; padding:10px 12px; border-radius:9px; background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.2); font-size:11.5px; color:#fca5a5; line-height:1.5; display:none; align-items:flex-start; gap:8px; }
+    .err-box.show { display:flex; }
+    .err-box svg { width:14px; height:14px; flex-shrink:0; margin-top:1px; }
+
+    .toast { position:fixed; bottom:20px; right:20px; padding:10px 16px; border-radius:10px; background:rgba(5,5,26,.96); border:1px solid var(--border); backdrop-filter:blur(24px); font-size:12px; font-weight:500; color:var(--txt); z-index:999; display:flex; align-items:center; gap:8px; transform:translateY(70px); opacity:0; transition:all .4s cubic-bezier(.34,1.56,.64,1); max-width:340px; pointer-events:none; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast svg { width:16px; height:16px; flex-shrink:0; }
+    .toast.ok  { border-color:rgba(16,185,129,.35); color:#86efac; }
+    .toast.err { border-color:rgba(239,68,68,.35);  color:#fca5a5; }
+
+    @media(max-width:860px) {
+      .workspace { grid-template-columns:1fr; }
+      .nav a span { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────── -->
+<header class="hdr">
+  <a class="logo" href="indes.html">
+    <img src="image/logo.png" alt="Livfy AI" class="logo-img" />
+  </a>
+  <nav class="nav">
+    <a href="indes.html" id="navSwap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Face Swap</span>
+    </a>
+    <a href="generate.html" class="active" id="navGen">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+      <span>Generate</span>
+    </a>
+  </nav>
+  <div class="hdr-right">
+    <div id="authSection" style="display:none;align-items:center;gap:10px;">
+      <span id="userEmail" style="font-size:12px;color:var(--txt2);"></span>
+      <button id="logoutBtn" style="padding:6px 12px;border-radius:7px;border:1px solid var(--border-h);background:rgba(255,255,255,.06);color:var(--txt2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">Logout</button>
+    </div>
+    <div id="loginSection" style="display:none;">
+      <a href="login.html" style="padding:8px 16px;border-radius:8px;background:var(--grad);color:#fff;text-decoration:none;font-size:12px;font-weight:700;">Login</a>
+    </div>
+    <div style="font-size:10.5px;color:var(--txt3);display:flex;align-items:center;gap:5px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <strong style="color:var(--txt2)">AI Studio</strong>
+    </div>
+  </div>
+</header>
+
+<!-- ── MAIN ────────────────────────────────────────────────────── -->
+<main class="main">
+  <section class="hero">
+    <div class="hero-tag">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      AI-Powered · Multi-Mode · High Quality
+    </div>
+    <h1>AI <span>Generate</span> Studio</h1>
+    <p class="hero-sub">Transform images into images, images into videos, or videos into videos — all powered by AI.</p>
+  </section>
+
+  <!-- ── MODE TABS ──────────────────────────────────── -->
+  <div class="mode-tabs">
+    <button class="mode-tab sel" data-mode="img2img">
+      <span class="mode-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></span>
+      <span>Image → Image</span>
+      <span class="mode-tag">IMG2IMG</span>
+    </button>
+    <button class="mode-tab" data-mode="img2vid">
+      <span class="mode-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></span>
+      <span>Image → Video</span>
+      <span class="mode-tag">IMG2VID</span>
+    </button>
+    <button class="mode-tab" data-mode="vid2vid">
+      <span class="mode-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect><path d="M16 12h6"></path></svg></span>
+      <span>Video → Video</span>
+      <span class="mode-tag">VID2VID</span>
+    </button>
+  </div>
+
+  <!-- ── WORKSPACE ──────────────────────────────────── -->
+  <div class="workspace">
+
+    <!-- LEFT: Input -->
+    <div class="panel" id="inputPanel">
+      <div class="panel-head">
+        <div class="panel-title"><div class="p-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div><span id="inputTitle">Source Image</span></div>
+        <span class="badge b-idle" id="inputBadge">No file</span>
+      </div>
+      <div class="panel-body">
+
+        <!-- Image upload -->
+        <div id="imgUploadZone">
+          <div class="drop" id="imgDrop">
+            <input type="file" id="imgFile" accept="image/*" />
+            <span class="drop-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></span>
+            <div class="drop-t">Drop source image here</div>
+            <div class="drop-s">JPG · PNG · WEBP · max 10MB</div>
+          </div>
+          <div id="imgPreview" style="display:none;margin-top:10px;">
+            <div class="media-preview">
+              <img id="imgPrevEl" src="" alt="Source" />
+              <div class="media-overlay">
+                <span class="ok-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Loaded</span>
+                <label class="change-btn"><input type="file" id="imgChange" accept="image/*" /><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Change</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video upload -->
+        <div id="vidUploadZone" style="display:none;">
+          <div class="drop" id="vidDrop">
+            <input type="file" id="vidFile" accept="video/*" />
+            <span class="drop-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></span>
+            <div class="drop-t">Drop source video here</div>
+            <div class="drop-s">MP4 · WEBM · MOV · max 50MB</div>
+          </div>
+          <div id="vidPreview" style="display:none;margin-top:10px;">
+            <div class="media-preview">
+              <video id="vidPrevEl" src="" controls muted></video>
+              <div class="media-overlay">
+                <span class="ok-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Loaded</span>
+                <label class="change-btn"><input type="file" id="vidChange" accept="video/*" /><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Change</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prompt -->
+        <div class="field-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Prompt
+        </div>
+        <textarea id="promptInput" class="prompt-ta" rows="3"
+          placeholder="Describe what you want the AI to generate…">Transform the image with a stylized cinematic look</textarea>
+
+        <!-- Settings -->
+        <div class="field-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Settings
+        </div>
+        <div class="settings-grid">
+          <div class="setting">
+            <label>Resolution</label>
+            <select id="resSelect">
+              <option value="480p">480p</option>
+              <option value="720p" selected>720p</option>
+              <option value="1080p">1080p</option>
+            </select>
+          </div>
+          <div class="setting" id="durationSetting" style="display:none;">
+            <label>Duration</label>
+            <select id="durationSelect">
+              <option value="3">3 seconds</option>
+              <option value="5" selected>5 seconds</option>
+              <option value="10">10 seconds</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting" style="margin-top:12px;">
+          <label style="font-size:10px;font-weight:600;color:var(--txt3);letter-spacing:.04em;text-transform:uppercase;">Creativity Strength</label>
+          <div class="range-row">
+            <input type="range" id="strengthSlider" min="10" max="100" value="70" />
+            <span class="range-val" id="strengthVal">70%</span>
+          </div>
+        </div>
+
+        <div class="mode-info" id="modeInfo">
+          <span class="mi-pill"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Image Input</span>
+          <span class="mi-pill"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Image Output</span>
+          <span class="mi-pill"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> AI Transform</span>
+        </div>
+
+        <div class="err-box" id="errBox"></div>
+
+        <button class="gen-btn" id="genBtn" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          Generate Image
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Output -->
+    <div class="panel" id="outputPanel">
+      <div class="panel-head">
+        <div class="panel-title"><div class="p-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><span id="outputTitle">AI Output</span></div>
+        <span class="badge b-idle" id="outputBadge">Waiting</span>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <div class="output-stage" id="outputStage">
+          <div class="out-ph" id="outPh">
+            <div class="out-ph-ico"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
+            <div class="out-ph-txt">Upload a source file &amp; click Generate<br/>to see the AI output here</div>
+          </div>
+          <div class="gen-progress hide" id="genProgress">
+            <div class="spinner"></div>
+            <div class="prog-txt" id="progTxt">Generating…</div>
+            <div class="prog-bar-wrap"><div class="prog-bar" id="progBar"></div></div>
+          </div>
+          <img id="resultImg" src="" alt="Result" style="display:none;" />
+          <video id="resultVid" src="" controls autoplay loop muted style="display:none;"></video>
+        </div>
+        <div class="output-actions hide" id="outputActions">
+          <button class="dl-btn" id="dlBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download
+          </button>
+          <button class="new-btn" id="newBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            New
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ═══════════════════════════════════════════════════════════════
+   Livfy — AI Generate Studio
+   Firebase Authentication & API Key Management
+═══════════════════════════════════════════════════════════════ */
+
+// Firebase Authentication
+let firebaseConfig = null;
+let app = null;
+let auth = null;
+let currentUser = null;
+
+// Fetch Firebase config from backend
+async function initFirebase() {
+  try {
+    const response = await fetch('/api/firebase-config');
+    firebaseConfig = await response.json();
+    
+    app = window.firebaseApp(firebaseConfig);
+    auth = window.firebaseAuth(app);
+    
+    // Check if user is logged in
+    window.onAuthStateChanged(auth, async (user) => {
+      const authSection = document.getElementById('authSection');
+      const loginSection = document.getElementById('loginSection');
+      const userEmail = document.getElementById('userEmail');
+      const logoutBtn = document.getElementById('logoutBtn');
+      
+      if (user) {
+        currentUser = user;
+        authSection.style.display = 'flex';
+        loginSection.style.display = 'none';
+        userEmail.textContent = user.email;
+        
+        // Get token and fetch API key
+        const token = await user.getIdToken();
+        await fetchAPIKey(token);
+      } else {
+        currentUser = null;
+        authSection.style.display = 'none';
+        loginSection.style.display = 'block';
+        window.location.href = 'login.html';
+      }
+    });
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    window.location.href = 'login.html';
+  }
+}
+
+// Fetch API key from protected endpoint
+async function fetchAPIKey(token) {
+  try {
+    const response = await fetch('/api/ai/generate', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    if (response.ok) {
+      window.API_KEY = data.apiKey;
+    } else {
+      console.error('Failed to fetch API key');
+      window.location.href = 'login.html';
+    }
+  } catch (error) {
+    console.error('Error fetching API key:', error);
+    window.location.href = 'login.html';
+  }
+}
+
+// Logout functionality
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    if (auth) {
+      try {
+        await window.signOut(auth);
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+  });
+}
+
+// Initialize Firebase
+let API_KEY = '';
+await initFirebase();
+
+import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
+
+const client = createDecartClient({ apiKey: API_KEY });
+
+// ── DOM ──────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const modeTabs     = document.querySelectorAll('.mode-tab');
+const imgUploadZone= $('imgUploadZone');
+const vidUploadZone= $('vidUploadZone');
+const imgDrop      = $('imgDrop');
+const imgFile      = $('imgFile');
+const imgChange    = $('imgChange');
+const imgPreview   = $('imgPreview');
+const imgPrevEl    = $('imgPrevEl');
+const vidDrop      = $('vidDrop');
+const vidFile      = $('vidFile');
+const vidChange    = $('vidChange');
+const vidPreview   = $('vidPreview');
+const vidPrevEl    = $('vidPrevEl');
+const promptInput  = $('promptInput');
+const resSelect    = $('resSelect');
+const durationSetting = $('durationSetting');
+const durationSelect  = $('durationSelect');
+const strengthSlider  = $('strengthSlider');
+const strengthVal     = $('strengthVal');
+const modeInfo     = $('modeInfo');
+const inputTitle   = $('inputTitle');
+const inputBadge   = $('inputBadge');
+const outputTitle  = $('outputTitle');
+const outputBadge  = $('outputBadge');
+const genBtn       = $('genBtn');
+const errBox       = $('errBox');
+const outPh        = $('outPh');
+const genProgress  = $('genProgress');
+const progTxt      = $('progTxt');
+const progBar      = $('progBar');
+const resultImg    = $('resultImg');
+const resultVid    = $('resultVid');
+const outputActions= $('outputActions');
+const dlBtn        = $('dlBtn');
+const newBtn       = $('newBtn');
+const toastEl      = $('toast');
+const outputStage  = $('outputStage');
+
+// ── State ────────────────────────────────────────────────────
+let mode        = 'img2img';
+let sourceFile  = null;
+let sourceUrl   = null;
+let resultUrl   = null;
+let resultBlob  = null;
+let generating  = false;
+
+// ── Icons ────────────────────────────────────────────────────
+const ICONS = {
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+  video: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
+  sparkles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  film: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>',
+  refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+};
+const pill = (ico, label) => `<span class="mi-pill">${ico}${label}</span>`;
+const btnLabel = (ico, label) => `${ico}<span>${label}</span>`;
+
+// ── Toast ────────────────────────────────────────────────────
+let _tt;
+function toast(msg, kind='', ms=4200) {
+  const icon = {ok:ICONS.check, err:ICONS.error, '':ICONS.info}[kind] ?? ICONS.info;
+  toastEl.innerHTML = `${icon}<span>${msg}</span>`;
+  toastEl.className   = `toast show${kind?' '+kind:''}`;
+  clearTimeout(_tt);
+  _tt = setTimeout(() => toastEl.classList.remove('show'), ms);
+}
+function showErr(m) { errBox.innerHTML = `${ICONS.warn}<span>${m}</span>`; errBox.classList.add('show'); }
+function clearErr()  { errBox.innerHTML = ''; errBox.classList.remove('show'); }
+
+// ── Slider ───────────────────────────────────────────────────
+strengthSlider.addEventListener('input', () => {
+  strengthVal.textContent = strengthSlider.value + '%';
+});
+
+// ── Mode switching ───────────────────────────────────────────
+const modeConfig = {
+  img2img: {
+    input:'image', output:'image',
+    title:'Source Image', outTitle:'AI Image Output',
+    prompt:'Transform the image with a stylized cinematic look',
+    pills:[
+      pill(ICONS.camera,'Image Input'),
+      pill(ICONS.image,'Image Output'),
+      pill(ICONS.sparkles,'AI Transform'),
+    ],
+    showDuration:false,
+    btnHtml: btnLabel(ICONS.sparkles,'Generate Image'),
+  },
+  img2vid: {
+    input:'image', output:'video',
+    title:'Source Image', outTitle:'AI Video Output',
+    prompt:'Animate this image with natural motion and cinematic camera movement',
+    pills:[
+      pill(ICONS.camera,'Image Input'),
+      pill(ICONS.video,'Video Output'),
+      pill(ICONS.film,'Animation'),
+    ],
+    showDuration:true,
+    btnHtml: btnLabel(ICONS.video,'Generate Video'),
+  },
+  vid2vid: {
+    input:'video', output:'video',
+    title:'Source Video', outTitle:'AI Video Output',
+    prompt:'Restyle this video with a dramatic cinematic transformation',
+    pills:[
+      pill(ICONS.video,'Video Input'),
+      pill(ICONS.video,'Video Output'),
+      pill(ICONS.refresh,'Transform'),
+    ],
+    showDuration:false,
+    btnHtml: btnLabel(ICONS.refresh,'Transform Video'),
+  },
+};
+
+function setMode(m) {
+  mode = m;
+  const c = modeConfig[m];
+  modeTabs.forEach(t => t.classList.toggle('sel', t.dataset.mode === m));
+  imgUploadZone.style.display = c.input === 'image' ? 'block' : 'none';
+  vidUploadZone.style.display = c.input === 'video' ? 'block' : 'none';
+  inputTitle.textContent = c.title;
+  outputTitle.textContent = c.outTitle;
+  promptInput.value = c.prompt;
+  durationSetting.style.display = c.showDuration ? 'block' : 'none';
+  genBtn.innerHTML = c.btnHtml;
+  modeInfo.innerHTML = c.pills.join('');
+
+  if ((c.input === 'image' && sourceFile && sourceFile.type.startsWith('video/')) ||
+      (c.input === 'video' && sourceFile && sourceFile.type.startsWith('image/'))) {
+    clearSource();
+  }
+  refreshBtn();
+  clearResult();
+}
+modeTabs.forEach(t => t.addEventListener('click', () => setMode(t.dataset.mode)));
+
+// ── File handling ────────────────────────────────────────────
+function handleImageFile(f) {
+  if (!f || !f.type.startsWith('image/')) return;
+  if (f.size > 10 * 1024 * 1024) { toast('Image must be under 10MB','err'); return; }
+  sourceFile = f;
+  sourceUrl  = URL.createObjectURL(f);
+  imgPrevEl.src = sourceUrl;
+  imgDrop.style.display = 'none';
+  imgPreview.style.display = 'block';
+  inputBadge.innerHTML = `${ICONS.check}<span>Ready</span>`;
+  inputBadge.className = 'badge b-ok';
+  toast('Image loaded!','ok');
+  refreshBtn();
+}
+
+function handleVideoFile(f) {
+  if (!f || !f.type.startsWith('video/')) return;
+  if (f.size > 50 * 1024 * 1024) { toast('Video must be under 50MB','err'); return; }
+  sourceFile = f;
+  sourceUrl  = URL.createObjectURL(f);
+  vidPrevEl.src = sourceUrl;
+  vidDrop.style.display = 'none';
+  vidPreview.style.display = 'block';
+  inputBadge.innerHTML = `${ICONS.check}<span>Ready</span>`;
+  inputBadge.className = 'badge b-ok';
+  toast('Video loaded!','ok');
+  refreshBtn();
+}
+
+function clearSource() {
+  sourceFile = null; sourceUrl = null;
+  imgDrop.style.display = 'block'; imgPreview.style.display = 'none';
+  vidDrop.style.display = 'block'; vidPreview.style.display = 'none';
+  inputBadge.textContent = 'No file'; inputBadge.className = 'badge b-idle';
+}
+
+imgFile.addEventListener('change',   e => handleImageFile(e.target.files[0]));
+imgChange.addEventListener('change', e => { if(e.target.files[0]){imgDrop.style.display='block';imgPreview.style.display='none';handleImageFile(e.target.files[0]);} });
+imgDrop.addEventListener('dragover', e => { e.preventDefault(); imgDrop.classList.add('over'); });
+imgDrop.addEventListener('dragleave',() => imgDrop.classList.remove('over'));
+imgDrop.addEventListener('drop',     e => { e.preventDefault(); imgDrop.classList.remove('over'); handleImageFile(e.dataTransfer.files[0]); });
+
+vidFile.addEventListener('change',   e => handleVideoFile(e.target.files[0]));
+vidChange.addEventListener('change', e => { if(e.target.files[0]){vidDrop.style.display='block';vidPreview.style.display='none';handleVideoFile(e.target.files[0]);} });
+vidDrop.addEventListener('dragover', e => { e.preventDefault(); vidDrop.classList.add('over'); });
+vidDrop.addEventListener('dragleave',() => vidDrop.classList.remove('over'));
+vidDrop.addEventListener('drop',     e => { e.preventDefault(); vidDrop.classList.remove('over'); handleVideoFile(e.dataTransfer.files[0]); });
+
+function refreshBtn() { genBtn.disabled = !sourceFile || generating; }
+
+function clearResult() {
+  resultImg.style.display = 'none'; resultImg.src = '';
+  resultVid.style.display = 'none'; resultVid.src = '';
+  outPh.classList.remove('hide');
+  genProgress.classList.add('hide');
+  outputActions.classList.add('hide');
+  outputStage.classList.remove('has-result');
+  outputBadge.textContent = 'Waiting'; outputBadge.className = 'badge b-idle';
+  resultUrl = null; resultBlob = null;
+}
+
+// ── Progress UI ──────────────────────────────────────────────
+function setProgress(pct, txt) {
+  progBar.style.width = (pct * 100) + '%';
+  if (txt) progTxt.textContent = txt;
+}
+
+// ── GENERATE — Real Decart API ───────────────────────────────
+async function generate() {
+  clearErr();
+  generating = true;
+  refreshBtn();
+
+  outPh.classList.add('hide');
+  resultImg.style.display = 'none';
+  resultVid.style.display = 'none';
+  genProgress.classList.remove('hide');
+  setProgress(0, 'Preparing…');
+  outputBadge.textContent = 'Generating';
+  outputBadge.className = 'badge b-busy';
+
+  const prompt     = promptInput.value.trim() || modeConfig[mode].prompt;
+  const resolution = resSelect.value;
+
+  try {
+    // Read source file into a Blob
+    const srcBuffer = await sourceFile.arrayBuffer();
+    const srcBlob   = new Blob([srcBuffer], { type: sourceFile.type });
+
+    if (mode === 'img2img') {
+      // ── Image-to-Image via client.process() ──
+      setProgress(0.15, 'Uploading image…');
+
+      const model = models.image('lucy-image-2');
+      setProgress(0.30, 'Running AI model…');
+
+      const result = await client.process({
+        model,
+        prompt,
+        data: srcBlob,
+        resolution,
+      });
+
+      setProgress(0.90, 'Finalizing…');
+
+      // result is a Blob
+      resultBlob = result;
+      resultUrl  = URL.createObjectURL(result);
+      resultImg.src = resultUrl;
+      resultImg.style.display = 'block';
+
+    } else if (mode === 'img2vid') {
+      // ── Image-to-Video via client.queue.submitAndPoll() ──
+      setProgress(0.10, 'Uploading image…');
+
+      const model = models.video('lucy-2.1');
+      setProgress(0.20, 'Submitting to AI queue…');
+
+      const result = await client.queue.submitAndPoll({
+        model,
+        data: srcBlob,
+        prompt,
+        resolution,
+        onStatusChange: (job) => {
+          const status = job.status || 'processing';
+          if (status === 'queued')     setProgress(0.25, 'Queued — waiting for GPU…');
+          if (status === 'processing') setProgress(0.50, 'AI is generating video…');
+          if (status === 'rendering')  setProgress(0.75, 'Rendering frames…');
+        },
+      });
+
+      setProgress(0.90, 'Finalizing…');
+
+      if (result.status === 'completed' && result.data) {
+        const buf = await result.data.arrayBuffer();
+        resultBlob = new Blob([buf], { type: 'video/mp4' });
+        resultUrl  = URL.createObjectURL(resultBlob);
+      } else {
+        resultBlob = result.data || result;
+        resultUrl  = URL.createObjectURL(resultBlob);
+      }
+      resultVid.src = resultUrl;
+      resultVid.style.display = 'block';
+
+    } else if (mode === 'vid2vid') {
+      // ── Video-to-Video via client.queue.submitAndPoll() ──
+      setProgress(0.10, 'Uploading video…');
+
+      const model = models.video('lucy-2.1');
+      setProgress(0.20, 'Submitting to AI queue…');
+
+      const result = await client.queue.submitAndPoll({
+        model,
+        data: srcBlob,
+        prompt,
+        resolution,
+        onStatusChange: (job) => {
+          const status = job.status || 'processing';
+          if (status === 'queued')     setProgress(0.25, 'Queued — waiting for GPU…');
+          if (status === 'processing') setProgress(0.50, 'AI is transforming video…');
+          if (status === 'rendering')  setProgress(0.75, 'Rendering output…');
+        },
+      });
+
+      setProgress(0.90, 'Finalizing…');
+
+      if (result.status === 'completed' && result.data) {
+        const buf = await result.data.arrayBuffer();
+        resultBlob = new Blob([buf], { type: 'video/mp4' });
+        resultUrl  = URL.createObjectURL(resultBlob);
+      } else {
+        resultBlob = result.data || result;
+        resultUrl  = URL.createObjectURL(resultBlob);
+      }
+      resultVid.src = resultUrl;
+      resultVid.style.display = 'block';
+    }
+
+    // Success
+    setProgress(1, 'Done!');
+    genProgress.classList.add('hide');
+    outputStage.classList.add('has-result');
+    outputActions.classList.remove('hide');
+    outputBadge.innerHTML = `${ICONS.check}<span>Complete</span>`;
+    outputBadge.className = 'badge b-ok';
+    const kind = modeConfig[mode].output === 'video' ? 'Video' : 'Image';
+    toast(`${kind} generated successfully!`, 'ok');
+
+  } catch (err) {
+    console.error('[Livfy Generate] Error:', err);
+    const msg = err?.message || 'Generation failed. Please try again.';
+    showErr(msg);
+    toast(msg, 'err', 7000);
+    genProgress.classList.add('hide');
+    outPh.classList.remove('hide');
+    outputBadge.textContent = 'Error';
+    outputBadge.className = 'badge b-idle';
+  } finally {
+    generating = false;
+    refreshBtn();
+  }
+}
+
+genBtn.addEventListener('click', generate);
+
+// ── Download ─────────────────────────────────────────────────
+dlBtn.addEventListener('click', () => {
+  if (!resultUrl) return;
+  const a = document.createElement('a');
+  a.href = resultUrl;
+  const ext = modeConfig[mode].output === 'video' ? 'mp4' : 'png';
+  a.download = `livfy-${mode}-${Date.now()}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast('Download started!', 'ok');
+});
+
+// ── New ──────────────────────────────────────────────────────
+newBtn.addEventListener('click', () => {
+  clearResult();
+  clearSource();
+  refreshBtn();
+});
+
+// ── Init ─────────────────────────────────────────────────────
+setMode('img2img');
+</script>
+</body>
+</html>

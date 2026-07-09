@@ -528,6 +528,8 @@ await initFirebase();
 
 import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
 
+let realtimeClient = null;
+
 const $ = id => document.getElementById(id);
 
 const ICONS = {
@@ -549,7 +551,7 @@ const videoStage  = $('videoStage'),oLand       = $('oLand'),         oPport    
 const orientLabel = $('orientLabel');
 
 let photoBlob=null, orient='landscape', streaming=false;
-let realtimeClient=null, camStream=null, timerSec=0, timerInterval=null;
+let camStream=null, timerSec=0, timerInterval=null;
 
 let _tt;
 function toast(msg,kind='',ms=4200){
@@ -588,6 +590,9 @@ async function startStream(){
   vidLoading.classList.remove('hide'); vidPh.classList.add('hide');
   sizeStage(); setStatus('Connecting…','sp-live'); sState.textContent='Connecting';
   try{
+    if (!STREAM_API_KEY) {
+      throw new Error('API key not loaded. Please refresh the page.');
+    }
     const model=models.realtime('lucy-2.1');
     const isPort=orient==='portrait';
     camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:isPort?model.height:model.width},height:{ideal:isPort?model.width:model.height},frameRate:typeof model.fps==='object'?{ideal:model.fps.ideal,max:model.fps.max}:{ideal:model.fps},facingMode:'user'},audio:false});

@@ -625,7 +625,14 @@ await initFirebase();
 
 import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
 
-const client = createDecartClient({ apiKey: API_KEY });
+let client = null;
+
+function getDecartClient() {
+  if (!client && API_KEY) {
+    client = createDecartClient({ apiKey: API_KEY });
+  }
+  return client;
+}
 
 // ── DOM ──────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -866,7 +873,11 @@ async function generate() {
       const model = models.image('lucy-image-2');
       setProgress(0.30, 'Running AI model…');
 
-      const result = await client.process({
+      const decartClient = getDecartClient();
+      if (!decartClient) {
+        throw new Error('API key not loaded. Please refresh the page.');
+      }
+      const result = await decartClient.process({
         model,
         prompt,
         data: srcBlob,
@@ -888,7 +899,11 @@ async function generate() {
       const model = models.video('lucy-2.1');
       setProgress(0.20, 'Submitting to AI queue…');
 
-      const result = await client.queue.submitAndPoll({
+      const decartClient = getDecartClient();
+      if (!decartClient) {
+        throw new Error('API key not loaded. Please refresh the page.');
+      }
+      const result = await decartClient.queue.submitAndPoll({
         model,
         data: srcBlob,
         prompt,
@@ -921,7 +936,11 @@ async function generate() {
       const model = models.video('lucy-2.1');
       setProgress(0.20, 'Submitting to AI queue…');
 
-      const result = await client.queue.submitAndPoll({
+      const decartClient = getDecartClient();
+      if (!decartClient) {
+        throw new Error('API key not loaded. Please refresh the page.');
+      }
+      const result = await decartClient.queue.submitAndPoll({
         model,
         data: srcBlob,
         prompt,

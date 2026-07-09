@@ -12,6 +12,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    
+    window.firebaseApp = initializeApp;
+    window.firebaseAuth = getAuth;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.signOut = signOut;
+  </script>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     :root {
@@ -354,20 +365,6 @@
     <div class="s-section">
       <div class="err-box" id="errBox"></div>
     </div>
-
-    <div class="s-section" style="margin-top:auto;">
-      <button class="main-btn" id="streamBtn" disabled>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        Start Face Swap
-      </button>
-      <button class="stop-btn" id="stopBtn" style="display:none;margin-top:8px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-        Stop Stream
-      </button>
-      <div style="margin-top:10px;padding:9px 10px;border-radius:8px;background:rgba(0,200,255,.05);border:1px solid rgba(0,200,255,.15);font-size:10.5px;color:rgba(0,200,255,.8);line-height:1.55;display:flex;gap:7px;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 12 9.05a4.65 4.65 0 0 0-4.5 3.45c.76.76 1.23 1.52 1.41 2.5"></path><path d="M12 2v2"></path><path d="M12 7v.01"></path><path d="M4.22 10.22l1.42 1.42"></path><path d="M1 18h2"></path><path d="M21 18h2"></path><path d="M18.36 11.64l1.42-1.42"></path><path d="M23 22H1"></path><path d="M8 6l4-2 4 2"></path><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path></svg>
-        Use a clear, front-facing photo for best results. AI processes your stream in real-time.
-      </div>
     </div>
   </aside>
 
@@ -387,6 +384,19 @@
         <div class="hud-pill" id="hudTimer">0s</div>
       </div>
     </div>
+
+    <div class="s-section" style="margin-top:auto;">
+      <button class="main-btn" id="streamBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        Start Face Swap
+      </button>
+      <button class="stop-btn" id="stopBtn" style="display:none;margin-top:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+        Stop Stream
+      </button>
+      <div style="margin-top:10px;padding:9px 10px;border-radius:8px;background:rgba(0,200,255,.05);border:1px solid rgba(0,200,255,.15);font-size:10.5px;color:rgba(0,200,255,.8);line-height:1.55;display:flex;gap:7px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 12 9.05a4.65 4.65 0 0 0-4.5 3.45c.76.76 1.23 1.52 1.41 2.5"></path><path d="M12 2v2"></path><path d="M12 7v.01"></path><path d="M4.22 10.22l1.42 1.42"></path><path d="M1 18h2"></path><path d="M21 18h2"></path><path d="M18.36 11.64l1.42-1.42"></path><path d="M23 22H1"></path><path d="M8 6l4-2 4 2"></path><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path></svg>
+        Use a clear, front-facing photo for best results. AI processes your stream in real-time.    </div>
     <div class="vid-controls">
       <div class="vc-info">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -408,83 +418,96 @@
 <script type="module">
 /* ──────────────────────────────────────────────────────────────
    Livfy — Real-Time AI Face Swap
-   Authentication & API Key Management
+   Firebase Authentication & API Key Management
 ────────────────────────────────────────────────────────────── */
 
-// Firebase SDK
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+// Firebase Authentication
+let firebaseConfig = null;
+let app = null;
+let auth = null;
+let currentUser = null;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMUJ-cvi0Y3b4_fkRRruGIIuPrnxEcHKY",
-  authDomain: "vendors-42342.firebaseapp.com",
-  projectId: "vendors-42342",
-  storageBucket: "vendors-42342.firebasestorage.app",
-  messagingSenderId: "1045831668433",
-  appId: "1:1045831668433:web:9a03a0f09a54d76cbfebf0",
-  measurementId: "G-XSK8L8NJ0R"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// Authentication check and management
-const authSection = document.getElementById('authSection');
-const loginSection = document.getElementById('loginSection');
-const userEmail = document.getElementById('userEmail');
-const logoutBtn = document.getElementById('logoutBtn');
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    authSection.style.display = 'flex';
-    loginSection.style.display = 'none';
-    userEmail.textContent = user.email;
+// Fetch Firebase config from backend
+async function initFirebase() {
+  try {
+    const response = await fetch('/api/firebase-config');
+    firebaseConfig = await response.json();
     
-    try {
-      const token = await user.getIdToken();
-      localStorage.setItem('firebaseToken', token);
-      localStorage.setItem('user', JSON.stringify({
-        email: user.email,
-        uid: user.uid,
-        displayName: user.displayName,
-        photoURL: user.photoURL
-      }));
+    app = window.firebaseApp(firebaseConfig);
+    auth = window.firebaseAuth(app);
+    
+    // Check if user is logged in
+    window.onAuthStateChanged(auth, async (user) => {
+      const authSection = document.getElementById('authSection');
+      const loginSection = document.getElementById('loginSection');
+      const userEmail = document.getElementById('userEmail');
+      const logoutBtn = document.getElementById('logoutBtn');
       
-      // Fetch API key from protected endpoint
-      const response = await fetch('/api/ai/stream', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-      if (response.ok) {
-        STREAM_API_KEY = data.apiKey;
+      if (user) {
+        currentUser = user;
+        authSection.style.display = 'flex';
+        loginSection.style.display = 'none';
+        userEmail.textContent = user.email;
+        
+        // Get token and fetch API key
+        const token = await user.getIdToken();
+        await fetchAPIKey(token);
       } else {
-        console.error('Failed to fetch API key');
+        currentUser = null;
+        authSection.style.display = 'none';
+        loginSection.style.display = 'block';
         window.location.href = 'login.html';
       }
-    } catch (error) {
-      console.error('Error:', error);
-      window.location.href = 'login.html';
-    }
-  } else {
-    authSection.style.display = 'none';
-    loginSection.style.display = 'block';
+    });
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
     window.location.href = 'login.html';
   }
-});
-
-logoutBtn.addEventListener('click', async () => {
-  await signOut(auth);
-  localStorage.removeItem('firebaseToken');
-  localStorage.removeItem('user');
-  window.location.href = 'login.html';
-});
+}
 
 // Fetch API key from protected endpoint
+async function fetchAPIKey(token) {
+  try {
+    const response = await fetch('/api/ai/stream', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    if (response.ok) {
+      window.STREAM_API_KEY = data.apiKey;
+    } else {
+      console.error('Failed to fetch API key');
+      window.location.href = 'login.html';
+    }
+  } catch (error) {
+    console.error('Error fetching API key:', error);
+    window.location.href = 'login.html';
+  }
+}
+
+// Logout functionality
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    if (auth) {
+      try {
+        await window.signOut(auth);
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+  });
+}
+
+// Initialize Firebase
 let STREAM_API_KEY = '';
+await initFirebase();
 
 import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
 

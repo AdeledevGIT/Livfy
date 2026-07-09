@@ -385,15 +385,23 @@ let auth = null;
 // Fetch Firebase config from backend
 async function initFirebase() {
   try {
-    console.log('Fetching Firebase config...');
+    console.log('Fetching Firebase config from:', window.location.origin + '/api/firebase-config');
     const response = await fetch('/api/firebase-config');
     
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to fetch Firebase config:', response.status, errorText);
       throw new Error(`Failed to fetch Firebase config: ${response.status}`);
     }
     
     firebaseConfig = await response.json();
     console.log('Firebase config loaded:', firebaseConfig);
+    
+    if (!firebaseConfig.apiKey) {
+      throw new Error('Firebase config missing apiKey');
+    }
     
     app = window.firebaseApp(firebaseConfig);
     auth = window.firebaseAuth(app);
@@ -420,7 +428,7 @@ async function initFirebase() {
     });
   } catch (error) {
     console.error('Firebase initialization error:', error);
-    showError('Failed to initialize authentication. Please refresh the page.');
+    showError(`Failed to initialize authentication: ${error.message}. Please refresh the page.`);
   }
 }
 

@@ -485,6 +485,7 @@ async function initFirebase() {
 // Fetch API key from protected endpoint
 async function fetchAPIKey(token) {
   try {
+    console.log('Fetching API key from:', window.location.origin + '/api/ai/stream');
     const response = await fetch('/api/ai/stream', {
       method: 'POST',
       headers: {
@@ -492,15 +493,23 @@ async function fetchAPIKey(token) {
         'Content-Type': 'application/json'
       }
     });
+    
+    console.log('API key response status:', response.status);
+    
     const data = await response.json();
-    if (response.ok) {
+    console.log('API key response data:', data);
+    
+    if (response.ok && data.apiKey) {
       window.STREAM_API_KEY = data.apiKey;
+      console.log('API key loaded successfully');
     } else {
-      console.error('Failed to fetch API key');
+      console.error('Failed to fetch API key:', data);
+      alert('Failed to load API key. Please try logging in again.');
       window.location.href = 'login.html';
     }
   } catch (error) {
     console.error('Error fetching API key:', error);
+    alert('Error loading API key. Please try logging in again.');
     window.location.href = 'login.html';
   }
 }
@@ -590,13 +599,13 @@ async function startStream(){
   vidLoading.classList.remove('hide'); vidPh.classList.add('hide');
   sizeStage(); setStatus('Connecting…','sp-live'); sState.textContent='Connecting';
   try{
-    if (!STREAM_API_KEY) {
+    if (!window.STREAM_API_KEY) {
       throw new Error('API key not loaded. Please refresh the page.');
     }
     const model=models.realtime('lucy-2.1');
     const isPort=orient==='portrait';
     camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:isPort?model.height:model.width},height:{ideal:isPort?model.width:model.height},frameRate:typeof model.fps==='object'?{ideal:model.fps.ideal,max:model.fps.max}:{ideal:model.fps},facingMode:'user'},audio:false});
-    const client=createDecartClient({apiKey:STREAM_API_KEY});
+    const client=createDecartClient({apiKey:window.STREAM_API_KEY});
     const imageBlob=new Blob([await photoBlob.arrayBuffer()],{type:photoBlob.type});
     realtimeClient=await client.realtime.connect(camStream,{model,mirror:'auto',
       onRemoteStream:(rs)=>{

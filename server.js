@@ -115,6 +115,129 @@ app.get('/api/auth/verify', authenticateFirebaseToken, (req, res) => {
   });
 });
 
+// Dashboard API endpoint to get user data
+app.get('/api/user/dashboard', authenticateFirebaseToken, async (req, res) => {
+  try {
+    const { uid } = req.user;
+    
+    // Get Firestore instance
+    const db = admin.firestore();
+    
+    // Get user document
+    const userDoc = await db.collection('users').doc(uid).get();
+    
+    if (!userDoc.exists) {
+      // Create user document with default values if it doesn't exist
+      const newUser = {
+        tokens: 100, // Give new users 100 free tokens
+        totalGenerations: 0,
+        dailyGenerations: {},
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+      
+      await db.collection('users').doc(uid).set(newUser);
+      
+      return res.json({
+        tokens: newUser.tokens,
+        totalGenerations: newUser.totalGenerations,
+        dailyGenerations: newUser.dailyGenerations
+      });
+    }
+    
+    // Return existing user data
+    const userData = userDoc.data();
+    res.json({
+      tokens: userData.tokens || 0,
+      totalGenerations: userData.totalGenerations || 0,
+      dailyGenerations: userData.dailyGenerations || {}
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard data' });
+  }
+});
+
+// Endpoint to get user's recent activity
+app.get('/api/user/activity', authenticateFirebaseToken, async (req, res) => {
+  try {
+    const { uid } = req.user;
+    const { limit = 10 } = req.query;
+    
+    // Get Firestore instance
+    const db = admin.firestore();
+    
+    // Query recent generations for the user
+    const generationsQuery = await db.collection('generations')
+      .where('userId', '==', uid)
+      .orderBy('createdAt', 'desc')
+      .limit(parseInt(limit))
+      .get();
+    
+    const activities = [];
+    generationsQuery.forEach(doc => {
+      const data = doc.data();
+      activities.push({
+        id: doc.id,
+        ...data
+      });
+    });
+    
+    res.json({ activities });
+  } catch (error) {
+    console.error('Error fetching user activity:', error);
+    res.status(500).json({ error: 'Failed to fetch user activity' });
+  }
+});
+
+// Endpoint for token top-up
+app.post('/api/payment/process', authenticateFirebaseToken, async (req, res) => {
+  try {
+    const { uid } = req.user;
+    const { tokens, amount } = req.body;
+    
+    if (!tokens || !amount) {
+      return res.status(400).json({ error: 'Tokens and amount required' });
+    }
+    
+    // Validate amounts
+    if (tokens <= 0 || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid token amount or price' });
+    }
+    
+    // Get Firestore instance
+    const db = admin.firestore();
+    
+    // In a real implementation, you would process the payment here
+    // For this example, we'll just add tokens to the user's account
+    
+    // Update user's token balance
+    const userRef = db.collection('users').doc(uid);
+    await userRef.update({
+      tokens: admin.firestore.FieldValue.increment(tokens),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // Record the transaction
+    await db.collection('transactions').add({
+      userId: uid,
+      type: 'token_addition',
+      amount: tokens,
+      cost: amount,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    res.json({
+      success: true,
+      message: `${tokens} tokens added successfully`,
+      newBalance: (await userRef.get()).data().tokens
+    });
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    res.status(500).json({ error: 'Failed to process payment' });
+  }
+});
+
 // Protected API endpoint for Decart AI (Face Swap)
 app.post('/api/ai/stream', authenticateFirebaseToken, (req, res) => {
   res.json({ 
@@ -125,6 +248,14 @@ app.post('/api/ai/stream', authenticateFirebaseToken, (req, res) => {
 
 // Protected API endpoint for generation
 app.post('/api/ai/generate', authenticateFirebaseToken, (req, res) => {
+  res.json({ 
+    apiKey: process.env.DECART_API_KEY,
+    message: 'API key provided for authenticated user'
+  });
+});
+
+// Protected API endpoint for face swap
+app.post('/api/ai/faceswap', authenticateFirebaseToken, (req, res) => {
   res.json({ 
     apiKey: process.env.DECART_API_KEY,
     message: 'API key provided for authenticated user'
@@ -150,6 +281,10 @@ app.get('/indes.html', (req, res) => {
 
 app.get('/generate.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'generate.html'));
+});
+
+app.get('/dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
 // Start server

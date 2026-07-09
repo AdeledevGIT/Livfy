@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Livfy — Dashboard</title>
+  <meta name="description" content="Your Livfy AI Studio dashboard - manage generations, tokens, and analytics" />
+  <link rel="icon" type="image/png" href="https://adeledevgit.github.io/Livfy/webicon.png" />
+  <link rel="apple-touch-icon" href="https://adeledevgit.github.io/Livfy/webicon.png" />
+  <link rel="manifest" href="https://adeledevgit.github.io/Livfy/manifest.json" />
+  <meta name="theme-color" content="#05051a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc, collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    
+    window.firebaseApp = initializeApp;
+    window.firebaseAuth = getAuth;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.signOut = signOut;
+    window.getFirestore = getFirestore;
+    window.doc = doc;
+    window.getDoc = getDoc;
+    window.collection = collection;
+    window.query = query;
+    window.orderBy = orderBy;
+    window.limit = limit;
+    window.getDocs = getDocs;
+  </script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#05051a;
+      --card:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.08);
+      --border-h:rgba(255,255,255,.14);
+      --txt:#f0f4ff;
+      --txt2:rgba(240,244,255,.62);
+      --txt3:rgba(240,244,255,.38);
+      --pink:#ff2d6f;
+      --violet:#c084fc;
+      --cyan:#00c8ff;
+      --accent:var(--pink);
+      --accent2:var(--violet);
+      --green:#10b981; --amber:#f59e0b; --red:#ef4444;
+      --grad:linear-gradient(135deg,#ff2d6f,#c084fc 50%,#00c8ff);
+      --grad-soft:linear-gradient(135deg,rgba(255,45,111,.12),rgba(0,200,255,.08));
+    }
+    html, body { height:100%; }
+    body {
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 15% 0%,rgba(255,45,111,.07) 0,transparent 60%),
+        radial-gradient(ellipse 60% 45% at 85% 95%,rgba(0,200,255,.05) 0,transparent 60%);
+      color:var(--txt);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ── HEADER ──────────────────────────────────────── */
+    .hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 28px; height:80px;
+      background:rgba(5,5,26,.92); backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:300;
+    }
+    .hdr::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,45,111,.35),rgba(0,200,255,.35),transparent);
+      pointer-events:none;
+    }
+    .logo { display:flex; align-items:center; text-decoration:none; }
+    .logo-img { height:68px; width:auto; object-fit:contain; display:block; }
+    .nav { display:flex; align-items:center; gap:4px; }
+    .nav a {
+      display:flex; align-items:center; gap:6px;
+      padding:6px 14px; border-radius:8px;
+      text-decoration:none; font-size:13px; font-weight:600;
+      color:var(--txt2); transition:all .2s;
+    }
+    .nav a:hover { background:rgba(255,255,255,.06); color:var(--txt); }
+    .nav a.active {
+      background:rgba(255,45,111,.1); border:1px solid rgba(255,45,111,.28);
+      color:var(--pink);
+    }
+    .hdr-right { display:flex; align-items:center; gap:10px; }
+
+    /* ── MAIN LAYOUT ─────────────────────────────────── */
+    .main { max-width:1280px; margin:0 auto; padding:36px 28px 80px; }
+
+    /* ── DASHBOARD GRID ──────────────────────────────── */
+    .dashboard-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+      gap:24px;
+      margin-bottom:36px;
+    }
+
+    /* ── CARDS ───────────────────────────────────────── */
+    .card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:16px; padding:24px;
+      backdrop-filter:blur(12px);
+      transition:all .3s;
+    }
+    .card:hover { border-color:rgba(255,45,111,.3); transform:translateY(-4px); }
+    
+    .card-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:16px;
+    }
+    .card-title {
+      font-size:16px; font-weight:700; color:var(--txt2);
+      display:flex; align-items:center; gap:8px;
+    }
+    .card-ico {
+      width:24px; height:24px; border-radius:7px;
+      background:rgba(255,45,111,.15);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .card-ico svg { width:14px; height:14px; stroke:var(--accent); }
+    
+    .card-value {
+      font-size:32px; font-weight:800; margin-bottom:8px;
+      background:var(--grad); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .card-desc { font-size:13px; color:var(--txt2); }
+
+    /* ── TOKEN BALANCE CARD ──────────────────────────── */
+    .balance-card { position:relative; overflow:hidden; }
+    .balance-card::before {
+      content:''; position:absolute; top:0; right:0;
+      width:120px; height:120px;
+      background:radial-gradient(circle, rgba(255,45,111,.15) 0%, transparent 70%);
+      border-radius:50%;
+      transform:translate(50%, -50%);
+      z-index:0;
+    }
+    .balance-content { position:relative; z-index:1; }
+    .token-balance { font-size:42px; font-weight:900; margin-bottom:8px; }
+    .token-label { display:flex; align-items:center; gap:6px; margin-bottom:16px; }
+    .token-label span { font-size:14px; color:var(--txt2); }
+
+    /* ── LOADING INDICATOR ───────────────────────────── */
+    .loading {
+      display:flex; align-items:center; justify-content:center;
+      padding:20px; color:var(--txt2);
+    }
+    .spinner {
+      width:20px; height:20px; border:2px solid var(--border);
+      border-top-color:var(--accent);
+      border-radius:50%; animation:spin 1s linear infinite;
+      margin-right:10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOP-UP SECTION ──────────────────────────────── */
+    .topup-section { margin-top:20px; }
+    .topup-options {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+      gap:12px; margin-bottom:16px;
+    }
+    .topup-option {
+      padding:12px 8px; border-radius:10px; border:1px solid var(--border-h);
+      background:rgba(255,255,255,.025); text-align:center;
+      font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;
+    }
+    .topup-option:hover { border-color:rgba(255,45,111,.3); color:var(--txt); }
+    .topup-option.sel { border-color:rgba(255,45,111,.5); color:#fff; background:rgba(255,45,111,.1); }
+    .topup-price { font-size:10px; color:var(--txt3); margin-top:2px; }
+    .topup-btn {
+      width:100%; padding:12px; border-radius:11px; border:none;
+      background:var(--grad); color:#fff;
+      font-size:14px; font-weight:700; cursor:pointer;
+      transition:all .25s; font-family:inherit;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      box-shadow:0 2px 16px rgba(255,45,111,.25);
+    }
+    .topup-btn:hover { transform:translateY(-1px); box-shadow:0 4px 24px rgba(255,45,111,.35); }
+
+    /* ── USAGE CHART ─────────────────────────────────── */
+    .usage-chart { margin-top:20px; }
+    .chart-header { display:flex; justify-content:space-between; margin-bottom:12px; }
+    .chart-label { font-size:12px; color:var(--txt2); }
+    .chart-bars { display:flex; align-items:end; gap:4px; height:80px; }
+    .chart-bar { flex:1; background:var(--grad); border-radius:2px 2px 0 0; transition:height .5s ease; }
+    .chart-day { font-size:10px; color:var(--txt3); text-align:center; margin-top:4px; }
+
+    /* ── RECENT ACTIVITY ─────────────────────────────── */
+    .activity-list { display:flex; flex-direction:column; gap:12px; }
+    .activity-item {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 0; border-bottom:1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom:none; }
+    .activity-icon {
+      width:36px; height:36px; border-radius:10px;
+      background:rgba(255,45,111,.15); display:flex;
+      align-items:center; justify-content:center;
+    }
+    .activity-icon svg { width:18px; height:18px; stroke:var(--accent); }
+    .activity-content { flex:1; }
+    .activity-title { font-size:14px; font-weight:600; margin-bottom:2px; }
+    .activity-desc { font-size:12px; color:var(--txt2); margin-bottom:4px; }
+    .activity-time { font-size:11px; color:var(--txt3); }
+
+    /* ── QUICK ACTIONS ───────────────────────────────── */
+    .quick-actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:16px; }
+    .action-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:12px; padding:20px; text-align:center;
+      transition:all .3s; cursor:pointer;
+    }
+    .action-card:hover { border-color:rgba(255,45,111,.3); transform:translateY(-2px); }
+    .action-icon {
+      width:40px; height:40px; border-radius:10px;
+      background:rgba(255,45,111,.15); display:flex;
+      align-items:center; justify-content:center; margin:0 auto 12px;
+    }
+    .action-icon svg { width:20px; height:20px; stroke:var(--accent); }
+    .action-title { font-size:14px; font-weight:600; margin-bottom:4px; }
+    .action-desc { font-size:11px; color:var(--txt2); }
+
+    /* ── TOAST ───────────────────────────────────────── */
+    .toast { position:fixed; bottom:20px; right:20px; padding:10px 16px; border-radius:10px; background:rgba(5,5,26,.96); border:1px solid var(--border); backdrop-filter:blur(24px); font-size:12px; font-weight:500; color:var(--txt); z-index:999; display:flex; align-items:center; gap:8px; transform:translateY(70px); opacity:0; transition:all .4s cubic-bezier(.34,1.56,.64,1); max-width:340px; pointer-events:none; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast svg { width:16px; height:16px; flex-shrink:0; }
+    .toast.ok  { border-color:rgba(16,185,129,.35); color:#86efac; }
+    .toast.err { border-color:rgba(239,68,68,.35);  color:#fca5a5; }
+
+    @media(max-width:780px) {
+      .dashboard-grid { grid-template-columns:1fr; }
+      .quick-actions { grid-template-columns:1fr; }
+      .nav a span { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────── -->
+<header class="hdr">
+  <a class="logo" href="index.html">
+    <img src="https://adeledevgit.github.io/Livfy/logo.png" alt="Livfy AI" class="logo-img" />
+  </a>
+  <nav class="nav">
+    <a href="dashboard.html" class="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="generate.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+      <span>Generate</span>
+    </a>
+    <a href="indes.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Face Swap</span>
+    </a>
+  </nav>
+  <div class="hdr-right">
+    <div id="authSection" style="display:none;align-items:center;gap:10px;">
+      <span id="userEmail" style="font-size:12px;color:var(--txt2);"></span>
+      <button id="logoutBtn" style="padding:6px 12px;border-radius:7px;border:1px solid var(--border-h);background:rgba(255,255,255,.06);color:var(--txt2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">Logout</button>
+    </div>
+    <div id="loginSection" style="display:none;">
+      <a href="login.html" style="padding:8px 16px;border-radius:8px;background:var(--grad);color:#fff;text-decoration:none;font-size:12px;font-weight:700;">Login</a>
+    </div>
+    <div style="font-size:10.5px;color:var(--txt3);display:flex;align-items:center;gap:5px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <strong style="color:var(--txt2)">AI Studio</strong>
+    </div>
+  </div>
+</header>
+
+<!-- ── MAIN ────────────────────────────────────────────────────── -->
+<main class="main">
+  <section class="hero">
+    <div class="hero-tag" style="display:flex;align-items:center;gap:7px;padding:5px 15px;border-radius:100px;background:rgba(255,45,111,.08);border:1px solid rgba(255,45,111,.22);font-size:10.5px;font-weight:700;color:var(--pink);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      Welcome Back
+    </div>
+    <h1>Your <span>Dashboard</span></h1>
+    <p class="hero-sub" style="font-size:15px;color:var(--txt2);max-width:520px;margin:0 auto;line-height:1.65;">Track your usage, manage tokens, and monitor your AI generation activity</p>
+  </section>
+
+  <!-- ── DASHBOARD CARDS ─────────────────────────────── -->
+  <div class="dashboard-grid">
+    <!-- Token Balance Card -->
+    <div class="card balance-card">
+      <div class="balance-content">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-ico">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </div>
+            <span>Token Balance</span>
+          </div>
+        </div>
+        <div class="token-balance" id="tokenBalance">
+          <div class="loading">
+            <div class="spinner"></div>
+            <span>Loading...</span>
+          </div>
+        </div>
+        <div class="token-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <span>Available tokens for AI generation</span>
+        </div>
+        
+        <div class="topup-section">
+          <div class="topup-options">
+            <div class="topup-option" data-tokens="100">100 <span class="topup-price">$0.99</span></div>
+            <div class="topup-option sel" data-tokens="500">500 <span class="topup-price">$4.49</span></div>
+            <div class="topup-option" data-tokens="1000">1000 <span class="topup-price">$7.99</span></div>
+          </div>
+          <button class="topup-btn" id="topupBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Top Up Tokens
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generations Today Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-ico">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <span>Generations Today</span>
+        </div>
+      </div>
+      <div class="card-value" id="generationsToday">
+        <div class="loading">
+          <div class="spinner"></div>
+          <span>Loading...</span>
+        </div>
+      </div>
+      <div class="card-desc" id="todayChange">-</div>
+    </div>
+
+    <!-- Total Generations Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-ico">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          </div>
+          <span>Total Generations</span>
+        </div>
+      </div>
+      <div class="card-value" id="totalGenerations">
+        <div class="loading">
+          <div class="spinner"></div>
+          <span>Loading...</span>
+        </div>
+      </div>
+      <div class="card-desc">Since account creation</div>
+    </div>
+
+    <!-- Usage Chart Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-ico">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </div>
+          <span>Usage Last 7 Days</span>
+        </div>
+      </div>
+      <div class="usage-chart">
+        <div class="chart-header">
+          <span class="chart-label">Generations</span>
+          <span class="chart-label">7 days</span>
+        </div>
+        <div class="chart-bars" id="usageChart">
+          <div class="loading" style="height:80px;justify-content:center;">
+            <div class="spinner"></div>
+            <span>Loading...</span>
+          </div>
+        </div>
+        <div id="chartDays" style="display:flex;justify-content:space-between;margin-top:8px;">
+          <!-- Days will be populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RECENT ACTIVITY ─────────────────────────────── -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-ico">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <span>Recent Activity</span>
+      </div>
+    </div>
+    <div class="activity-list" id="recentActivity">
+      <div class="loading" style="padding:20px;text-align:center;">
+        <div class="spinner"></div>
+        <span>Loading activity...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── QUICK ACTIONS ───────────────────────────────── -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-ico">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+        </div>
+        <span>Quick Actions</span>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <div class="action-card" onclick="window.location.href='generate.html'">
+        <div class="action-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+        </div>
+        <div class="action-title">Generate</div>
+        <div class="action-desc">Create new AI content</div>
+      </div>
+      <div class="action-card" onclick="window.location.href='indes.html'">
+        <div class="action-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="action-title">Face Swap</div>
+        <div class="action-desc">Swap faces in media</div>
+      </div>
+      <div class="action-card" onclick="document.getElementById('topupModal').style.display='flex'">
+        <div class="action-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </div>
+        <div class="action-title">Top Up</div>
+        <div class="action-desc">Add more tokens</div>
+      </div>
+      <div class="action-card" onclick="window.location.href='profile.html'">
+        <div class="action-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="7"></circle><path d="M7 20.5c0-1.5 2-2.5 5-2.5s5 1 5 2.5"></path></svg>
+        </div>
+        <div class="action-title">Profile</div>
+        <div class="action-desc">Manage account</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── MODAL FOR TOP UP ────────────────────────────────────────── -->
+<div id="topupModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:90%;max-width:420px;padding:24px;position:relative;">
+    <h3 style="font-size:20px;font-weight:700;margin-bottom:16px;color:var(--txt);">Top Up Your Tokens</h3>
+    <p style="font-size:14px;color:var(--txt2);margin-bottom:20px;">Select a package to add tokens to your account</p>
+    
+    <div class="topup-options" style="grid-template-columns:1fr;gap:12px;">
+      <div class="topup-option sel" data-tokens="100" data-price="0.99">
+        <strong>100 tokens</strong><br>
+        <span class="topup-price">$0.99</span>
+      </div>
+      <div class="topup-option" data-tokens="500" data-price="4.49">
+        <strong>500 tokens</strong><br>
+        <span class="topup-price">$4.49 (best value)</span>
+      </div>
+      <div class="topup-option" data-tokens="1000" data-price="7.99">
+        <strong>1000 tokens</strong><br>
+        <span class="topup-price">$7.99 (save 20%)</span>
+      </div>
+    </div>
+    
+    <div style="margin:20px 0;padding:16px;background:var(--card);border-radius:12px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="color:var(--txt2);">Selected:</span>
+        <span id="selectedPackage">500 tokens ($4.49)</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <strong style="color:var(--txt);">Total:</strong>
+        <strong id="totalPrice">$4.49</strong>
+      </div>
+    </div>
+    
+    <div style="display:flex;gap:12px;">
+      <button id="cancelTopup" style="flex:1;padding:12px;border-radius:11px;border:1px solid var(--border-h);background:rgba(255,255,255,.06);color:var(--txt);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;">Cancel</button>
+      <button id="confirmTopup" style="flex:1;padding:12px;border-radius:11px;border:none;background:var(--grad);color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all .25s;">Confirm Payment</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ═══════════════════════════════════════════════════════════════
+   Livfy — Dashboard
+   Firebase Authentication & Real Data Integration
+═══════════════════════════════════════════════════════════════ */
+
+// Firebase Authentication and Firestore
+let firebaseConfig = null;
+let app = null;
+let auth = null;
+let db = null;
+let currentUser = null;
+
+// Fetch Firebase config from backend
+async function initFirebase() {
+  try {
+    // Try to get config from backend API
+    try {
+      const response = await fetch('/api/firebase-config');
+      if (response.ok) {
+        firebaseConfig = await response.json();
+      }
+    } catch (e) {
+      console.warn('Backend Firebase config not available, using default config');
+    }
+    
+    // Fallback to default config if not provided by backend
+    if (!firebaseConfig) {
+      firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "your-project.firebaseapp.com",
+        projectId: "your-project-id",
+        storageBucket: "your-project.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "your-app-id"
+      };
+    }
+    
+    app = window.firebaseApp(firebaseConfig);
+    auth = window.firebaseAuth(app);
+    db = window.getFirestore(app);
+    
+    // Check if user is logged in
+    window.onAuthStateChanged(auth, async (user) => {
+      const authSection = document.getElementById('authSection');
+      const loginSection = document.getElementById('loginSection');
+      const userEmail = document.getElementById('userEmail');
+      const logoutBtn = document.getElementById('logoutBtn');
+      
+      if (user) {
+        currentUser = user;
+        authSection.style.display = 'flex';
+        loginSection.style.display = 'none';
+        userEmail.textContent = user.email;
+        
+        // Get token and fetch user data
+        const token = await user.getIdToken();
+        await fetchUserData(user.uid);
+      } else {
+        currentUser = null;
+        authSection.style.display = 'none';
+        loginSection.style.display = 'block';
+        window.location.href = 'login.html';
+      }
+    });
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    window.location.href = 'login.html';
+  }
+}
+
+// Fetch user data from Firestore
+async function fetchUserData(userId) {
+  try {
+    // Get user document
+    const userRef = window.doc(db, 'users', userId);
+    const userSnap = await window.getDoc(userRef);
+    
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      
+      // Update token balance
+      document.getElementById('tokenBalance').textContent = userData.tokens ? userData.tokens.toLocaleString() : '0';
+      
+      // Update total generations
+      const totalGens = userData.totalGenerations || 0;
+      document.getElementById('totalGenerations').textContent = totalGens.toLocaleString();
+      
+      // Calculate generations today
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+      const todayGens = userData.dailyGenerations?.[todayStr] || 0;
+      document.getElementById('generationsToday').textContent = todayGens;
+      
+      // Calculate percentage change from yesterday
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      const yesterdayGens = userData.dailyGenerations?.[yesterdayStr] || 0;
+      
+      if (yesterdayGens > 0) {
+        const changePercent = Math.round(((todayGens - yesterdayGens) / yesterdayGens) * 100);
+        const changeText = changePercent >= 0 ? `+${changePercent}% from yesterday` : `${changePercent}% from yesterday`;
+        document.getElementById('todayChange').textContent = changeText;
+      } else if (todayGens > 0 && yesterdayGens === 0) {
+        document.getElementById('todayChange').textContent = '+100% from yesterday';
+      } else {
+        document.getElementById('todayChange').textContent = 'No change from yesterday';
+      }
+      
+      // Load usage chart data
+      await loadUsageChartData(userData.dailyGenerations || {});
+      
+      // Load recent activity
+      await loadRecentActivity(userId);
+    } else {
+      // User doesn't exist in DB, initialize with defaults
+      document.getElementById('tokenBalance').textContent = '0';
+      document.getElementById('totalGenerations').textContent = '0';
+      document.getElementById('generationsToday').textContent = '0';
+      document.getElementById('todayChange').textContent = 'New user';
+      
+      // Initialize empty chart and activity
+      await loadUsageChartData({});
+      await loadRecentActivity(userId);
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    toast('Error loading user data. Please try again.', 'err');
+    
+    // Fallback to default values
+    document.getElementById('tokenBalance').textContent = 'Loading failed';
+    document.getElementById('totalGenerations').textContent = 'Loading failed';
+    document.getElementById('generationsToday').textContent = 'Loading failed';
+    document.getElementById('todayChange').textContent = 'Check connection';
+  }
+}
+
+// Load usage chart data
+async function loadUsageChartData(dailyGenerations) {
+  const chartBars = document.getElementById('usageChart');
+  const chartDays = document.getElementById('chartDays');
+  
+  // Clear loading indicator
+  chartBars.innerHTML = '';
+  chartDays.innerHTML = '';
+  
+  // Get last 7 days
+  const dates = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    dates.push(date.toISOString().split('T')[0]);
+  }
+  
+  // Find max value for scaling
+  const values = dates.map(date => dailyGenerations[date] || 0);
+  const maxValue = Math.max(...values, 10); // Ensure non-zero max for visualization
+  
+  // Create bars and labels
+  dates.forEach((date, index) => {
+    const value = dailyGenerations[date] || 0;
+    const barHeight = maxValue > 0 ? (value / maxValue) * 100 : 0;
+    
+    const barDiv = document.createElement('div');
+    barDiv.className = 'chart-bar';
+    barDiv.style.height = `${barHeight}%`;
+    barDiv.title = `${date}: ${value} generations`;
+    chartBars.appendChild(barDiv);
+    
+    const dayAbbr = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+    const daySpan = document.createElement('span');
+    daySpan.className = 'chart-day';
+    daySpan.textContent = dayAbbr;
+    chartDays.appendChild(daySpan);
+  });
+}
+
+// Load recent activity
+async function loadRecentActivity(userId) {
+  try {
+    const activityList = document.getElementById('recentActivity');
+    
+    // Query recent generations from Firestore
+    const gensCollection = window.collection(db, 'generations');
+    const q = window.query(gensCollection, 
+      window.where('userId', '==', userId), 
+      window.orderBy('createdAt', 'desc'), 
+      window.limit(5)
+    );
+    
+    const querySnapshot = await window.getDocs(q);
+    
+    // Clear loading indicator
+    activityList.innerHTML = '';
+    
+    if (querySnapshot.empty) {
+      activityList.innerHTML = `
+        <div style="text-align:center;padding:20px;color:var(--txt3);">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin-bottom:10px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <p>No recent activity yet</p>
+          <p style="font-size:12px;margin-top:5px;">Start generating content to see your activity here</p>
+        </div>
+      `;
+      return;
+    }
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const timestamp = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
+      const timeDiff = getTimeDifference(timestamp);
+      
+      let activityIcon, activityTitle, activityDesc;
+      
+      switch (data.type) {
+        case 'img2img':
+          activityIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+          activityTitle = 'Image Generated';
+          activityDesc = `Created image with "${truncateText(data.prompt || 'Custom prompt', 30)}"`;
+          break;
+        case 'img2vid':
+          activityIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>';
+          activityTitle = 'Video Generated';
+          activityDesc = `Converted image to video with "${truncateText(data.prompt || 'Video effect', 30)}"`;
+          break;
+        case 'vid2vid':
+          activityIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect><path d="M16 12h6"></path></svg>';
+          activityTitle = 'Video Transformed';
+          activityDesc = `Transformed video with "${truncateText(data.prompt || 'Style transfer', 30)}"`;
+          break;
+        case 'faceswap':
+          activityIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+          activityTitle = 'Face Swap Completed';
+          activityDesc = `Swapped faces in media`;
+          break;
+        case 'tokens_added':
+          activityIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>';
+          activityTitle = 'Tokens Added';
+          activityDesc = `Added ${data.amount || 0} tokens to your account`;
+          break;
+        default:
+          activityIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+          activityTitle = 'Activity';
+          activityDesc = data.description || 'Completed an action';
+      }
+      
+      const activityItem = document.createElement('div');
+      activityItem.className = 'activity-item';
+      activityItem.innerHTML = `
+        <div class="activity-icon">
+          ${activityIcon}
+        </div>
+        <div class="activity-content">
+          <div class="activity-title">${activityTitle}</div>
+          <div class="activity-desc">${activityDesc}</div>
+          <div class="activity-time">${timeDiff}</div>
+        </div>
+      `;
+      
+      activityList.appendChild(activityItem);
+    });
+  } catch (error) {
+    console.error('Error loading recent activity:', error);
+    
+    // Show error message
+    const activityList = document.getElementById('recentActivity');
+    activityList.innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--txt3);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin-bottom:10px;"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <p>Error loading activity</p>
+        <p style="font-size:12px;margin-top:5px;">Please refresh the page</p>
+      </div>
+    `;
+  }
+}
+
+// Helper function to truncate text
+function truncateText(text, maxLength) {
+  if (text.length <= maxLength) return text;
+  return text.substr(0, maxLength) + '...';
+}
+
+// Helper function to calculate time difference
+function getTimeDifference(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (diffDays > 0) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffHours > 0) {
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffMinutes > 0) {
+    return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+  } else {
+    return 'Just now';
+  }
+}
+
+// Logout functionality
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    if (auth) {
+      try {
+        await window.signOut(auth);
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+  });
+}
+
+// Initialize Firebase
+await initFirebase();
+
+// ── DASHBOARD FUNCTIONALITY ────────────────────────────────────
+
+// Token top-up functionality
+const topupOptions = document.querySelectorAll('.topup-option');
+const topupBtn = document.getElementById('topupBtn');
+const topupModal = document.getElementById('topupModal');
+const cancelTopup = document.getElementById('cancelTopup');
+const confirmTopup = document.getElementById('confirmTopup');
+
+let selectedTokens = 500;
+let selectedPrice = 4.49;
+
+// Select top-up option
+topupOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    // Remove selection from all options
+    topupOptions.forEach(opt => opt.classList.remove('sel'));
+    
+    // Add selection to clicked option
+    option.classList.add('sel');
+    
+    // Update selected values
+    selectedTokens = parseInt(option.dataset.tokens);
+    selectedPrice = parseFloat(option.dataset.price || option.querySelector('.topup-price').textContent.replace('$', '').split(' ')[0]);
+    
+    // Update modal display if open
+    if (topupModal.style.display === 'flex') {
+      document.getElementById('selectedPackage').textContent = `${selectedTokens} tokens ($${selectedPrice.toFixed(2)})`;
+      document.getElementById('totalPrice').textContent = `$${selectedPrice.toFixed(2)}`;
+    }
+  });
+});
+
+// Open top-up modal
+topupBtn.addEventListener('click', () => {
+  topupModal.style.display = 'flex';
+  document.getElementById('selectedPackage').textContent = `${selectedTokens} tokens ($${selectedPrice.toFixed(2)})`;
+  document.getElementById('totalPrice').textContent = `$${selectedPrice.toFixed(2)}`;
+});
+
+// Close modal handlers
+cancelTopup.addEventListener('click', () => {
+  topupModal.style.display = 'none';
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+  if (e.target === topupModal) {
+    topupModal.style.display = 'none';
+  }
+});
+
+// Confirm top-up
+confirmTopup.addEventListener('click', async () => {
+  try {
+    // Show processing message
+    toast(`Processing payment for ${selectedTokens} tokens...`, '');
+    
+    // In a real implementation, this would call a payment API
+    // For now, we'll simulate the transaction and update Firestore
+    const token = await currentUser.getIdToken();
+    const response = await fetch('/api/payment/process', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        tokens: selectedTokens,
+        amount: selectedPrice
+      })
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Update local display
+      const currentBalance = parseInt(document.getElementById('tokenBalance').textContent.replace(/,/g, ''));
+      const newBalance = currentBalance + selectedTokens;
+      document.getElementById('tokenBalance').textContent = newBalance.toLocaleString();
+      
+      toast(`${selectedTokens} tokens added successfully!`, 'ok');
+      topupModal.style.display = 'none';
+      
+      // Refresh the data display
+      await fetchUserData(currentUser.uid);
+    } else {
+      const error = await response.json();
+      toast(error.message || 'Payment failed. Please try again.', 'err');
+    }
+  } catch (error) {
+    console.error('Top-up error:', error);
+    toast('Payment failed. Please try again.', 'err');
+  }
+});
+
+// Quick actions
+const quickActions = document.querySelectorAll('.action-card');
+quickActions.forEach(action => {
+  action.addEventListener('click', (e) => {
+    // Prevent double triggering if there's a nested link
+    if (e.target.tagName !== 'A') {
+      const onClick = action.getAttribute('onclick');
+      if (onClick && onClick.startsWith('window.location.href=')) {
+        // Extract URL from onclick
+        const url = onClick.match(/'([^']+)'/)[1];
+        window.location.href = url;
+      }
+    }
+  });
+});
+
+// ── TOAST FUNCTIONALITY ─────────────────────────────────────────
+const toastEl = document.getElementById('toast');
+let toastTimeout;
+
+function toast(msg, kind='') {
+  const icons = {
+    ok: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    err: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+  };
+  const icon = icons[kind] || icons.info;
+  
+  toastEl.innerHTML = `${icon}<span>${msg}</span>`;
+  toastEl.className = `toast show${kind ? ' ' + kind : ''}`;
+  
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toastEl.classList.remove('show');
+  }, 4200);
+}
+
+// Add Firestore query functions to global scope if not already available
+if (!window.where) {
+  window.where = function(field, operator, value) {
+    // This is a simplified implementation for demonstration
+    // In a real app, this would come from the Firebase SDK
+    return { field, operator, value };
+  };
+}
+</script>
+</body>
+</html>

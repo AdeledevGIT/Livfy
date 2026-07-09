@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { admin } = require('firebase-admin');
+const admin = require('firebase-admin');
 const path = require('path');
 
 const app = express();

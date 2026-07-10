@@ -291,8 +291,8 @@ app.get('/generate.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'generate.html'));
 });
 
-app.get('/home.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'home.html'));
+app.get('/manifest.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'manifest.json'));
 });
 
 app.get('/voice.html', (req, res) => {

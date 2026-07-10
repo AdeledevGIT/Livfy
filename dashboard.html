@@ -557,10 +557,6 @@
       <span id="userEmail" style="font-size:12px;color:var(--text-dim);"></span>
       <button id="logoutBtn" style="padding:6px 12px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--text-dim);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">Logout</button>
     </div>
-    <div id="loginSection" style="display:none;">
-      <a href="login.html" style="padding:8px 16px;border-radius:8px;background:var(--grad);color:#fff;text-decoration:none;font-size:12px;font-weight:700;">Login</a>
-    </div>
-    
     <a href="profile.html" class="avatar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     </a>
@@ -741,7 +737,6 @@
   // Auth State Management
   window.onAuthStateChanged(auth, (user) => {
     const authSection = document.getElementById('authSection');
-    const loginSection = document.getElementById('loginSection');
     const userEmail = document.getElementById('userEmail');
 
     console.log('Auth state changed:', user ? 'User logged in' : 'No user');
@@ -749,7 +744,6 @@
     if (user) {
       // User is signed in
       authSection.style.display = 'flex';
-      loginSection.style.display = 'none';
       userEmail.textContent = user.email.substring(0, 5) + '...';
       
       // Save user data to local storage
@@ -770,10 +764,15 @@
     } else {
       // User is signed out
       authSection.style.display = 'none';
-      loginSection.style.display = 'block';
       
       // Load from local storage as fallback
-      loadLocalData();
+      const userData = LocalStorage.getUserData();
+      if (userData) {
+        authSection.style.display = 'flex';
+        userEmail.textContent = userData.email.substring(0, 5) + '...';
+      } else {
+        window.location.href = 'login.html';
+      }
     }
     
     // Update UI

@@ -415,8 +415,8 @@ async function initFirebase() {
             emailVerified: user.emailVerified,
             displayName: user.displayName
           }));
-          console.log('Redirecting to indes.html...');
-          window.location.href = 'indes.html';
+          console.log('Redirecting to dashboard.html...');
+          window.location.href = 'dashboard.html';
         });
       }
     });
@@ -501,7 +501,7 @@ loginForm.addEventListener('submit', async (e) => {
       displayName: user.displayName
     }));
     
-    window.location.href = 'indes.html';
+    window.location.href = 'dashboard.html';
   } catch (error) {
     console.error('Login error:', error);
     const errorCode = error.code;
@@ -550,7 +550,7 @@ googleBtn.addEventListener('click', async () => {
       photoURL: user.photoURL
     }));
     
-    window.location.href = 'indes.html';
+    window.location.href = 'dashboard.html';
   } catch (error) {
     console.error('Google sign-in error:', error);
     const errorCode = error.code;

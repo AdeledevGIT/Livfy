@@ -3,10 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Livfy — Home</title>
+<title>Livfy — Profile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,450&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="https://adeledevgit.github.io/Livfy/webicon.png" />
+<link rel="apple-touch-icon" href="https://adeledevgit.github.io/Livfy/webicon.png" />
+<link rel="manifest" href="https://adeledevgit.github.io/Livfy/manifest.json" />
+<meta name="theme-color" content="#05051a" />
 
 <!-- Firebase SDK -->
 <script type="module">
@@ -21,7 +25,7 @@
 <style>
 
   /* ============================================================
-     TOKENS - Dashboard color scheme (pink/violet/cyan)
+     TOKENS - Dashboard color scheme
   ============================================================ */
   :root {
     --bg: #05051a;
@@ -84,8 +88,7 @@
   }
 
   /* ============================================================
-     TOP NAV (desktop) — quiet wordmark, plain text links,
-     balance is a small pill, not a stat card.
+     TOP NAV (desktop)
   ============================================================ */
   .topnav {
     height:var(--nav-h);
@@ -96,7 +99,7 @@
     border-bottom:1px solid var(--line);
     position:sticky;
     top:0;
-    background:rgba(20,22,28,.85);
+    background:rgba(5,5,26,.85);
     backdrop-filter:blur(14px);
     z-index:200;
   }
@@ -146,7 +149,7 @@
     gap:10px;
   }
 
-  /* balance — small, quiet, expandable. never the loudest thing on screen */
+  /* balance pill */
   .balance-pill {
     position:relative;
   }
@@ -210,8 +213,20 @@
   .avatar {
     width:34px; height:34px;
     border-radius:50%;
-    background:var(--grad);
+    background:var(--surface);
     border:1px solid var(--line-hi);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:border-color .15s;
+  }
+  .avatar:hover {
+    border-color:var(--pink);
+  }
+  .avatar svg {
+    width:18px; height:18px;
+    stroke:var(--text-dim);
   }
 
   /* ============================================================
@@ -223,238 +238,158 @@
     padding:44px 28px 64px;
   }
 
-  /* ── Greeting, with the waveform signature behind it ──────── */
-  .greeting {
-    position:relative;
-    padding:8px 0 34px;
-    margin-bottom:8px;
-  }
-  .greeting-wave {
-    position:absolute;
-    left:-8px; right:-8px; bottom:6px;
-    height:46px;
-    opacity:.5;
-    pointer-events:none;
-  }
-  .greeting-wave path {
-    fill:none;
-    stroke:url(#waveGrad);
-    stroke-width:1.5;
-    stroke-linecap:round;
-  }
-  .greeting h1 {
-    position:relative;
-    font-family:var(--font-display);
-    font-weight:500;
-    font-style:italic;
-    font-size:34px;
-    letter-spacing:-.01em;
-    margin-bottom:8px;
-  }
-  .greeting p {
-    position:relative;
-    font-size:14.5px;
-    color:var(--text-dim);
-    max-width:440px;
-  }
-
-  /* ── Tool tiles — the front door. Inviting, not dense. ────── */
-  .tools {
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:14px;
-    margin-bottom:40px;
-  }
-  .tool-tile {
+  /* ── Profile Header ─────────────────────────────────── */
+  .profile-header {
     display:flex;
-    flex-direction:column;
-    gap:16px;
-    padding:22px 20px;
+    align-items:center;
+    gap:20px;
+    padding:30px;
     border-radius:var(--radius-lg);
     background:var(--surface);
     border:1px solid var(--line);
-    transition:transform .22s cubic-bezier(.2,.8,.3,1), border-color .22s, background .22s;
+    margin-bottom:24px;
   }
-  .tool-tile:hover {
-    transform:translateY(-3px);
-    border-color:var(--line-hi);
-    background:var(--surface-hi);
-  }
-  .tool-tile .ico {
-    width:38px; height:38px;
-    border-radius:11px;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .tool-tile .ico svg { width:19px; height:19px; stroke-width:1.6; }
-  .tool-tile.generate .ico { background:var(--pink-wash); }
-  .tool-tile.generate .ico svg { stroke:var(--pink); }
-  .tool-tile.voice .ico { background:var(--cyan-wash); }
-  .tool-tile.voice .ico svg { stroke:var(--cyan); }
-  .tool-tile.face .ico { background:var(--violet-wash); }
-  .tool-tile.face .ico svg { stroke:var(--violet); }
-
-  .tool-tile h3 {
-    font-size:15.5px;
-    font-weight:600;
-    margin-bottom:4px;
+  .profile-avatar {
+    width:80px; height:80px;
+    border-radius:50%;
+    background:var(--grad);
     display:flex;
     align-items:center;
-    gap:8px;
+    justify-content:center;
+    flex-shrink:0;
   }
-  .tool-tile p {
-    font-size:12.8px;
+  .profile-avatar svg {
+    width:40px; height:40px;
+    stroke:#fff;
+  }
+  .profile-info h1 {
+    font-family:var(--font-display);
+    font-size:28px;
+    font-weight:500;
+    margin-bottom:8px;
+  }
+  .profile-info p {
     color:var(--text-dim);
-    line-height:1.5;
-  }
-  .tag-consent {
-    font-size:9.5px;
-    font-weight:700;
-    letter-spacing:.04em;
-    text-transform:uppercase;
-    color:var(--cyan);
-    background:var(--cyan-wash);
-    padding:2px 7px;
-    border-radius:100px;
+    font-size:14px;
   }
 
-  /* ── Trust strip — plain reassurance, said once, said plainly ── */
-  .trust-strip {
+  /* ── Profile Sections ─────────────────────────────── */
+  .profile-section {
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:24px;
+    margin-bottom:20px;
+  }
+  .section-title {
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:16px;
+    color:var(--text);
+  }
+  .field-group {
     display:flex;
-    gap:28px;
-    flex-wrap:wrap;
-    padding:18px 22px;
+    flex-direction:column;
+    gap:16px;
+  }
+  .field {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .field label {
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .field input {
+    padding:12px 16px;
     border-radius:var(--radius-md);
     background:var(--bg-soft);
     border:1px solid var(--line);
-    margin-bottom:44px;
-  }
-  .trust-item {
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    flex:1;
-    min-width:200px;
-  }
-  .trust-item svg {
-    width:16px; height:16px;
-    stroke:var(--pink);
-    stroke-width:1.8;
-    flex-shrink:0;
-    margin-top:1px;
-  }
-  .trust-item span {
-    font-size:12.5px;
-    color:var(--text-dim);
-    line-height:1.5;
-  }
-  .trust-item strong { color:var(--text); font-weight:600; }
-
-  /* ── Section heading pattern ───────────────────────────────── */
-  .section-head {
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    margin-bottom:16px;
-  }
-  .section-head h2 {
-    font-size:14.5px;
-    font-weight:600;
     color:var(--text);
+    font-family:inherit;
+    font-size:14px;
+    transition:border-color .2s;
   }
-  .section-head a {
-    font-size:12.5px;
+  .field input:focus {
+    outline:none;
+    border-color:var(--pink);
+  }
+  .field input:disabled {
+    opacity:.5;
+    cursor:not-allowed;
+  }
+
+  /* ── Stats Grid ─────────────────────────────────── */
+  .stats-grid {
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .stat-card {
+    background:var(--bg-soft);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:20px;
+    text-align:center;
+  }
+  .stat-value {
+    font-size:28px;
+    font-weight:700;
+    background:var(--grad);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:4px;
+  }
+  .stat-label {
+    font-size:12px;
     color:var(--text-dim);
     font-weight:500;
   }
-  .section-head a:hover { color:var(--text); }
 
-  /* ── Recent creations ──────────────────────────────────────── */
-  .creations {
-    display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:12px;
-    margin-bottom:36px;
-  }
-  .creation-card {
-    aspect-ratio:1;
+  /* ── Action Buttons ─────────────────────────────── */
+  .action-btn {
+    width:100%;
+    padding:12px;
     border-radius:var(--radius-md);
+    background:var(--grad);
+    color:#fff;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:background .15s;
+    margin-top:8px;
+  }
+  .action-btn:hover {
+    background:linear-gradient(135deg,#c084fc,#00c8ff);
+  }
+  .action-btn.secondary {
     background:var(--surface);
     border:1px solid var(--line);
-    position:relative;
-    overflow:hidden;
-    display:flex;
-    align-items:flex-end;
-    transition:border-color .2s;
+    color:var(--text);
   }
-  .creation-card:hover { border-color:var(--line-hi); }
-  .creation-card .swatch {
-    position:absolute; inset:0;
+  .action-btn.secondary:hover {
+    background:var(--surface-hi);
   }
-  .creation-card.c1 .swatch { background:linear-gradient(155deg, #3a3f2e, #556647); }
-  .creation-card.c2 .swatch { background:linear-gradient(155deg, #2c3a3c, var(--cyan) 180%); opacity:.35; }
-  .creation-card.c3 .swatch { background:linear-gradient(155deg, #3c322c, var(--pink) 180%); opacity:.3; }
-  .creation-card .meta {
-    position:relative;
-    width:100%;
-    padding:10px;
-    background:linear-gradient(0deg, rgba(0,0,0,.55), transparent);
-    font-size:11px;
-    color:#f1efe9;
-    display:flex;
-    align-items:center;
-    gap:5px;
-  }
-  .creation-card .meta svg { width:11px; height:11px; stroke:currentColor; opacity:.8; }
 
-  .creation-empty {
-    grid-column:1 / -1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:36px 20px;
-    border-radius:var(--radius-md);
-    border:1px dashed var(--line-hi);
-    text-align:center;
-  }
-  .creation-empty svg { width:22px; height:22px; stroke:var(--text-faint); }
-  .creation-empty p { font-size:12.5px; color:var(--text-dim); max-width:260px; }
-
-  /* ── Quiet stats line — text, not cards ────────────────────── */
-  .stats-line {
-    display:flex;
-    flex-wrap:wrap;
-    gap:20px;
-    padding:16px 4px 0;
-    border-top:1px solid var(--line);
-    font-size:12.5px;
-    color:var(--text-faint);
-  }
-  .stats-line b { color:var(--text-dim); font-weight:600; }
-
-  /* ============================================================
-     BOTTOM TAB BAR — mobile app pattern, hidden on desktop
-  ============================================================ */
-  .tabbar {
-    display:none;
-  }
+  /* ── TABBAR (mobile) ─────────────────────────────── */
+  .tabbar { display:none; }
 
   /* ============================================================
      RESPONSIVE
   ============================================================ */
-  @media (max-width:860px) {
-    .tools { grid-template-columns:1fr; }
-    .creations { grid-template-columns:repeat(2, 1fr); }
-  }
-
   @media (max-width:780px) {
     .nav-links { display:none; }
     .topnav { padding:0 16px; height:56px; }
     .brand span.wordmark { display:none; }
     .main { padding:24px 16px calc(var(--tabbar-h) + 28px); }
-    .greeting h1 { font-size:26px; }
-    .trust-strip { flex-direction:column; gap:14px; padding:16px; }
+    .profile-header { flex-direction:column; text-align:center; }
+    .stats-grid { grid-template-columns:1fr; }
 
     .tabbar {
       display:flex;
@@ -482,10 +417,6 @@
     .tabbar a.active { color:var(--pink); }
     .tabbar a.active svg { stroke:var(--pink); }
   }
-
-  @media (max-width:420px) {
-    .creations { grid-template-columns:repeat(2, 1fr); }
-  }
 </style>
 </head>
 <body>
@@ -501,7 +432,6 @@
 
   <div class="nav-links">
     <a href="dashboard.html">Dashboard</a>
-    <a href="home.html" class="active">Home</a>
     <a href="generate.html">Generate</a>
     <a href="voice.html">Voice Clone</a>
     <a href="indes.html">Face Swap</a>
@@ -531,134 +461,67 @@
       <a href="login.html" style="padding:8px 16px;border-radius:8px;background:var(--grad);color:#fff;text-decoration:none;font-size:12px;font-weight:700;">Login</a>
     </div>
     
-    <div class="avatar"></div>
+    <a href="profile.html" class="avatar" style="background:var(--grad);border-color:var(--pink);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </a>
   </div>
 </nav>
 
-<!-- ── MAIN ────────────────────────────────────────────────── -->
+<!-- ── MAIN ─────────────────────────────────────────────────── -->
 <main class="main">
-
-  <!-- Greeting, with a quiet waveform running underneath — the
-       one signature flourish, echoing the new voice feature -->
-  <section class="greeting">
-    <svg class="greeting-wave" viewBox="0 0 600 46" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="var(--pink)" stop-opacity="0"/>
-          <stop offset="35%" stop-color="var(--pink)" stop-opacity=".7"/>
-          <stop offset="70%" stop-color="var(--violet)" stop-opacity=".5"/>
-          <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path d="M0,23 L20,23 L28,10 L36,36 L44,4 L52,40 L60,15 L68,28 L76,23 L92,23 L100,12 L108,32 L116,20 L124,26 L132,23 L600,23"/>
-    </svg>
-    <h1>Good afternoon.</h1>
-    <p>Everything you make stays yours, and private to you by default.</p>
-  </section>
-
-  <!-- Tool tiles -->
-  <section class="tools">
-    <a href="generate.html" class="tool-tile generate">
-      <div class="ico">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><circle cx="11" cy="11" r="2"></circle></svg>
-      </div>
-      <div>
-        <h3>Generate</h3>
-        <p>Turn a prompt or a photo into an image or a short video clip.</p>
-      </div>
-    </a>
-
-    <a href="voice.html" class="tool-tile voice">
-      <div class="ico">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg>
-      </div>
-      <div>
-        <h3>Voice Clone <span class="tag-consent">New</span></h3>
-        <p>Record a short sample and speak in that voice for any script.</p>
-      </div>
-    </a>
-
-    <a href="indes.html" class="tool-tile face">
-      <div class="ico">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      </div>
-      <div>
-        <h3>Face Swap</h3>
-        <p>Replace a face in a photo or clip while keeping the motion.</p>
-      </div>
-    </a>
-  </section>
-
-  <!-- Trust strip -->
-  <section class="trust-strip">
-    <div class="trust-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-      <span><strong>Private by default.</strong> Your uploads and clones are visible only to you unless you choose to share them.</span>
+  <!-- ── Profile Header ───────────────────────────────────── -->
+  <div class="profile-header">
+    <div class="profile-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     </div>
-    <div class="trust-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-      <span><strong>Consent comes first.</strong> Only clone a voice or a face you have permission to use.</span>
+    <div class="profile-info">
+      <h1>Profile</h1>
+      <p>Manage your account settings and preferences</p>
     </div>
-    <div class="trust-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-      <span><strong>You're in control.</strong> Delete any clone or generation permanently, any time, from its details page.</span>
-    </div>
-  </section>
-
-  <!-- Recent creations -->
-  <section>
-    <div class="section-head">
-      <h2>Recent creations</h2>
-      <a href="library.html">View all</a>
-    </div>
-    <div class="creations">
-      <div class="creation-card c1">
-        <div class="swatch"></div>
-        <div class="meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
-          <span>Image · 2h ago</span>
-        </div>
-      </div>
-      <div class="creation-card c2">
-        <div class="swatch"></div>
-        <div class="meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1"></path></svg>
-          <span>Voice · yesterday</span>
-        </div>
-      </div>
-      <div class="creation-card c3">
-        <div class="swatch"></div>
-        <div class="meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span>Face swap · 2d ago</span>
-        </div>
-      </div>
-      <div class="creation-card c1">
-        <div class="swatch"></div>
-        <div class="meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
-          <span>Video · 3d ago</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Quiet stats, plain text, no cards -->
-  <div class="stats-line">
-    <span>Total generations: <b id="totalGenerations">0</b></span>
-    <span>Tokens used: <b id="tokensUsed">0</b></span>
-    <span>Tokens remaining: <b id="tokensRemaining">0</b></span>
   </div>
 
+  <!-- ── Stats ───────────────────────────────────────────── -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="totalGenerations">0</div>
+      <div class="stat-label">Total Generations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="tokensUsed">0</div>
+      <div class="stat-label">Tokens Used</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="accountAge">0</div>
+      <div class="stat-label">Days Active</div>
+    </div>
+  </div>
+
+  <!-- ── Account Info ───────────────────────────────────── -->
+  <div class="profile-section">
+    <div class="section-title">Account Information</div>
+    <div class="field-group">
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="emailInput" disabled />
+      </div>
+      <div class="field">
+        <label>Display Name</label>
+        <input type="text" id="nameInput" placeholder="Enter your name" />
+      </div>
+    </div>
+    <button class="action-btn" id="saveProfileBtn">Save Changes</button>
+  </div>
+
+  <!-- ── Account Actions ─────────────────────────────────── -->
+  <div class="profile-section">
+    <div class="section-title">Account Actions</div>
+    <button class="action-btn secondary" id="logoutBtn">Logout</button>
+  </div>
 </main>
 
-<!-- ── BOTTOM TAB BAR (mobile app) ─────────────────────────── -->
+<!-- ── BOTTOM TAB BAR (mobile) ───────────────────────────────── -->
 <nav class="tabbar">
   <a href="dashboard.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-    <span>Dashboard</span>
-  </a>
-  <a href="home.html" class="active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
     <span>Home</span>
   </a>
@@ -669,6 +532,10 @@
   <a href="voice.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
     <span>Voice</span>
+  </a>
+  <a href="profile.html" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    <span>Profile</span>
   </a>
 </nav>
 
@@ -696,15 +563,15 @@
       const data = localStorage.getItem('livfy_user');
       return data ? JSON.parse(data) : null;
     },
-    getActivity() {
-      const data = localStorage.getItem('livfy_activity');
-      return data ? JSON.parse(data) : [];
-    },
     getStats() {
       return {
         totalGenerations: parseInt(localStorage.getItem('livfy_total_generations') || '0'),
-        tokensUsed: parseInt(localStorage.getItem('livfy_tokens_used') || '0')
+        tokensUsed: parseInt(localStorage.getItem('livfy_tokens_used') || '0'),
+        accountCreated: localStorage.getItem('livfy_account_created') || null
       };
+    },
+    setUserData(userData) {
+      localStorage.setItem('livfy_user', JSON.stringify(userData));
     }
   };
 
@@ -719,7 +586,14 @@
     if (user) {
       authSection.style.display = 'flex';
       loginSection.style.display = 'none';
-      userEmail.textContent = user.email;
+      userEmail.textContent = user.email.substring(0, 5) + '...';
+      
+      // Update profile fields
+      document.getElementById('emailInput').value = user.email;
+      const userData = LocalStorage.getUserData();
+      if (userData && userData.displayName) {
+        document.getElementById('nameInput').value = userData.displayName;
+      }
     } else {
       authSection.style.display = 'none';
       loginSection.style.display = 'block';
@@ -729,7 +603,13 @@
       if (userData) {
         authSection.style.display = 'flex';
         loginSection.style.display = 'none';
-        userEmail.textContent = userData.email;
+        userEmail.textContent = userData.email.substring(0, 5) + '...';
+        document.getElementById('emailInput').value = userData.email;
+        if (userData.displayName) {
+          document.getElementById('nameInput').value = userData.displayName;
+        }
+      } else {
+        window.location.href = 'login.html';
       }
     }
     
@@ -742,7 +622,13 @@
     const stats = LocalStorage.getStats();
     document.getElementById('totalGenerations').textContent = stats.totalGenerations;
     document.getElementById('tokensUsed').textContent = stats.tokensUsed;
-    document.getElementById('tokensRemaining').textContent = balance;
+    
+    if (stats.accountCreated) {
+      const createdDate = new Date(stats.accountCreated);
+      const today = new Date();
+      const daysActive = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
+      document.getElementById('accountAge').textContent = daysActive;
+    }
   });
 
   // Logout functionality
@@ -751,6 +637,17 @@
       await window.signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  });
+
+  // Save profile changes
+  document.getElementById('saveProfileBtn').addEventListener('click', () => {
+    const displayName = document.getElementById('nameInput').value;
+    const userData = LocalStorage.getUserData();
+    if (userData) {
+      userData.displayName = displayName;
+      LocalStorage.setUserData(userData);
+      alert('Profile saved successfully!');
     }
   });
 

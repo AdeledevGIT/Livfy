@@ -180,8 +180,20 @@
     .avatar {
       width:34px; height:34px;
       border-radius:50%;
-      background:var(--grad);
+      background:var(--card);
       border:1px solid var(--border-h);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:border-color .15s;
+    }
+    .avatar:hover {
+      border-color:var(--pink);
+    }
+    .avatar svg {
+      width:18px; height:18px;
+      stroke:var(--txt2);
     }
 
     /* ── MAIN ────────────────────────────────────────── */
@@ -470,17 +482,17 @@
 <nav class="topnav">
   <div class="brand">
     <div class="brand-mark">
-      <img src="https://adeledevgit.github.io/Livfy/webicon.png" alt="Livfy" />
+      <img src="https://adeledevgit.github.io/Livfy/logo.png" alt="Livfy" />
     </div>
     <span class="wordmark">Livfy</span>
   </div>
 
   <div class="nav-links">
     <a href="dashboard.html">Dashboard</a>
-    <a href="home.html">Home</a>
     <a href="generate.html" class="active">Generate</a>
     <a href="voice.html">Voice Clone</a>
     <a href="indes.html">Face Swap</a>
+    <a href="profile.html">Profile</a>
   </div>
 
   <div class="nav-right">
@@ -507,7 +519,9 @@
       <a href="login.html" style="padding:8px 16px;border-radius:8px;background:var(--grad);color:#fff;text-decoration:none;font-size:12px;font-weight:700;">Login</a>
     </div>
     
-    <div class="avatar"></div>
+    <a href="profile.html" class="avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </a>
   </div>
 </nav>
 
@@ -689,10 +703,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
     <span>Dashboard</span>
   </a>
-  <a href="home.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Home</span>
-  </a>
   <a href="generate.html" class="active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
     <span>Create</span>
@@ -700,6 +710,10 @@
   <a href="voice.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
     <span>Voice</span>
+  </a>
+  <a href="profile.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    <span>Profile</span>
   </a>
 </nav>
 
@@ -747,7 +761,7 @@ async function initFirebase() {
         currentUser = user;
         authSection.style.display = 'flex';
         loginSection.style.display = 'none';
-        userEmail.textContent = user.email;
+        userEmail.textContent = user.email.substring(0, 5) + '...';
         
         // Update token balance from local storage
         const balance = LocalStorage.getTokenBalance();
@@ -767,7 +781,7 @@ async function initFirebase() {
         if (userData) {
           authSection.style.display = 'flex';
           loginSection.style.display = 'none';
-          userEmail.textContent = userData.email;
+          userEmail.textContent = userData.email.substring(0, 5) + '...';
           
           const balance = LocalStorage.getTokenBalance();
           document.getElementById('tokenBalance').textContent = balance;

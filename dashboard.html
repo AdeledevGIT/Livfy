@@ -228,8 +228,20 @@
   .avatar {
     width:34px; height:34px;
     border-radius:50%;
-    background:var(--grad);
+    background:var(--surface);
     border:1px solid var(--line-hi);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:border-color .15s;
+  }
+  .avatar:hover {
+    border-color:var(--pink);
+  }
+  .avatar svg {
+    width:18px; height:18px;
+    stroke:var(--text-dim);
   }
 
   /* ============================================================
@@ -512,16 +524,17 @@
 <nav class="topnav">
   <div class="brand">
     <div class="brand-mark">
-      <img src="https://adeledevgit.github.io/Livfy/webicon.png" alt="Livfy" />
+      <img src="https://adeledevgit.github.io/Livfy/logo.png" alt="Livfy" />
     </div>
     <span class="wordmark">Livfy</span>
   </div>
 
   <div class="nav-links">
-    <a href="dashboard.html" class="active">Dashboard</a>
+    <a href="dashboard.html" class="active">Home</a>
     <a href="generate.html">Generate</a>
     <a href="voice.html">Voice Clone</a>
     <a href="indes.html">Face Swap</a>
+    <a href="profile.html">Profile</a>
   </div>
 
   <div class="nav-right">
@@ -548,7 +561,9 @@
       <a href="login.html" style="padding:8px 16px;border-radius:8px;background:var(--grad);color:#fff;text-decoration:none;font-size:12px;font-weight:700;">Login</a>
     </div>
     
-    <div class="avatar"></div>
+    <a href="profile.html" class="avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </a>
   </div>
 </nav>
 
@@ -654,9 +669,9 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
     <span>Voice</span>
   </a>
-  <a href="indes.html">
+  <a href="profile.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-    <span>Face</span>
+    <span>Profile</span>
   </a>
 </nav>
 
@@ -735,7 +750,7 @@
       // User is signed in
       authSection.style.display = 'flex';
       loginSection.style.display = 'none';
-      userEmail.textContent = user.email;
+      userEmail.textContent = user.email.substring(0, 5) + '...';
       
       // Save user data to local storage
       LocalStorage.setUserData({
@@ -819,7 +834,7 @@
       
       authSection.style.display = 'flex';
       loginSection.style.display = 'none';
-      userEmail.textContent = userData.email;
+      userEmail.textContent = userData.email.substring(0, 5) + '...';
     }
     
     const balance = LocalStorage.getTokenBalance();
@@ -853,6 +868,13 @@
           </div>
         </div>
       `).join('');
+    } else {
+      activityContainer.innerHTML = `
+        <div class="creation-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <p>No recent activity yet. Start creating to see your generations here.</p>
+        </div>
+      `;
     }
   }
 

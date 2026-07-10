@@ -295,6 +295,10 @@ app.get('/manifest.json', (req, res) => {
   res.sendFile(path.join(__dirname, 'manifest.json'));
 });
 
+app.get('/profile.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'profile.html'));
+});
+
 app.get('/voice.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'voice.html'));
 });

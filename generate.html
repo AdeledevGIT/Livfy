@@ -41,6 +41,7 @@
       --green:#10b981; --amber:#f59e0b; --red:#ef4444;
       --grad:linear-gradient(135deg,#ff2d6f,#c084fc 50%,#00c8ff);
       --grad-soft:linear-gradient(135deg,rgba(255,45,111,.12),rgba(0,200,255,.08));
+      --tabbar-h: 64px;
     }
     html, body { height:100%; }
     body {
@@ -82,6 +83,15 @@
       border-radius:8px;
       background:var(--grad);
       flex-shrink:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .brand-mark img {
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      border-radius:8px;
     }
     .nav-links {
       display:flex;
@@ -176,6 +186,9 @@
 
     /* ── MAIN ────────────────────────────────────────── */
     .main { max-width:1280px; margin:0 auto; padding:36px 28px 80px; }
+
+    /* ── TABBAR (mobile) ─────────────────────────────── */
+    .tabbar { display:none; }
 
     /* ── HERO ────────────────────────────────────────── */
     .hero { text-align:center; margin-bottom:36px; }
@@ -342,18 +355,19 @@
     .mi-pill svg { width:10px; height:10px; flex-shrink:0; opacity:.7; }
 
     .gen-btn {
-      width:100%; padding:14px; border-radius:11px; border:none;
+      width:100%; padding:10px; border-radius:9px; border:none;
       background:var(--grad); color:#fff;
-      font-size:14px; font-weight:800; cursor:pointer;
+      font-size:12px; font-weight:700; cursor:pointer;
       transition:all .25s; font-family:inherit;
-      display:flex; align-items:center; justify-content:center; gap:9px;
-      box-shadow:0 2px 16px rgba(255,45,111,.25);
-      position:relative; overflow:hidden; margin-top:18px;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      box-shadow:0 2px 12px rgba(255,45,111,.2);
+      position:relative; overflow:hidden; margin-top:14px;
     }
     .gen-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(transparent,rgba(255,255,255,.07)); pointer-events:none; }
-    .gen-btn:hover { transform:translateY(-1px); box-shadow:0 4px 24px rgba(255,45,111,.35); }
+    .gen-btn:hover { transform:translateY(-1px); box-shadow:0 3px 18px rgba(255,45,111,.3); }
     .gen-btn:active { transform:translateY(0); }
     .gen-btn:disabled { opacity:.3; cursor:not-allowed; pointer-events:none; box-shadow:none; }
+    .gen-btn svg { width:14px; height:14px; }
 
     /* ── OUTPUT PANEL ─────────────────────────────────── */
     .output-stage {
@@ -414,6 +428,40 @@
       .workspace { grid-template-columns:1fr; }
       .main { padding-bottom:100px; }
     }
+
+    @media(max-width:780px) {
+      .main { padding:24px 16px calc(var(--tabbar-h) + 28px); }
+      .topnav { padding:0 16px; height:56px; }
+      .brand span.wordmark { display:none; }
+      .nav-links { display:none; }
+      
+      .tabbar {
+        display:flex;
+        position:fixed;
+        left:0; right:0; bottom:0;
+        height:var(--tabbar-h);
+        padding-bottom:env(safe-area-inset-bottom);
+        background:rgba(5,5,26,.92);
+        backdrop-filter:blur(16px);
+        border-top:1px solid var(--border);
+        z-index:300;
+      }
+      .tabbar a {
+        flex:1;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:3px;
+        font-size:10.5px;
+        font-weight:600;
+        color:var(--txt3);
+        text-decoration:none;
+      }
+      .tabbar a svg { width:20px; height:20px; stroke-width:1.7; stroke:var(--txt3); }
+      .tabbar a.active { color:var(--pink); }
+      .tabbar a.active svg { stroke:var(--pink); }
+    }
   </style>
 </head>
 <body>
@@ -421,7 +469,9 @@
 <!-- ── TOP NAV ─────────────────────────────────────────────── -->
 <nav class="topnav">
   <div class="brand">
-    <div class="brand-mark"></div>
+    <div class="brand-mark">
+      <img src="https://adeledevgit.github.io/Livfy/webicon.png" alt="Livfy" />
+    </div>
     <span class="wordmark">Livfy</span>
   </div>
 
@@ -633,6 +683,26 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ── BOTTOM TAB BAR (mobile) ───────────────────────────────── -->
+<nav class="tabbar">
+  <a href="dashboard.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+    <span>Dashboard</span>
+  </a>
+  <a href="home.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Home</span>
+  </a>
+  <a href="generate.html" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+    <span>Create</span>
+  </a>
+  <a href="voice.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+    <span>Voice</span>
+  </a>
+</nav>
+
 <script type="module">
 /* ═══════════════════════════════════════════════════════════════
    Livfy — AI Generate Studio
@@ -671,6 +741,8 @@ async function initFirebase() {
       const userEmail = document.getElementById('userEmail');
       const logoutBtn = document.getElementById('logoutBtn');
       
+      console.log('Auth state changed:', user ? 'User logged in' : 'No user');
+      
       if (user) {
         currentUser = user;
         authSection.style.display = 'flex';
@@ -689,7 +761,20 @@ async function initFirebase() {
         currentUser = null;
         authSection.style.display = 'none';
         loginSection.style.display = 'block';
-        window.location.href = 'login.html';
+        
+        // Load from local storage as fallback
+        const userData = JSON.parse(localStorage.getItem('livfy_user') || 'null');
+        if (userData) {
+          authSection.style.display = 'flex';
+          loginSection.style.display = 'none';
+          userEmail.textContent = userData.email;
+          
+          const balance = LocalStorage.getTokenBalance();
+          document.getElementById('tokenBalance').textContent = balance;
+          document.getElementById('panelTokenBalance').textContent = balance;
+        } else {
+          window.location.href = 'login.html';
+        }
       }
     });
   } catch (error) {

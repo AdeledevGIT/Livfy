@@ -132,6 +132,15 @@
     border-radius:8px;
     background:var(--grad);
     flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .brand-mark img {
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    border-radius:8px;
   }
   .nav-links {
     display:flex;
@@ -502,7 +511,9 @@
 <!-- ── TOP NAV ─────────────────────────────────────────────── -->
 <nav class="topnav">
   <div class="brand">
-    <div class="brand-mark"></div>
+    <div class="brand-mark">
+      <img src="https://adeledevgit.github.io/Livfy/webicon.png" alt="Livfy" />
+    </div>
     <span class="wordmark">Livfy</span>
   </div>
 
@@ -718,6 +729,8 @@
     const loginSection = document.getElementById('loginSection');
     const userEmail = document.getElementById('userEmail');
 
+    console.log('Auth state changed:', user ? 'User logged in' : 'No user');
+
     if (user) {
       // User is signed in
       authSection.style.display = 'flex';
@@ -798,6 +811,17 @@
 
   // Load local data as fallback
   function loadLocalData() {
+    const userData = LocalStorage.getUserData();
+    if (userData) {
+      const authSection = document.getElementById('authSection');
+      const loginSection = document.getElementById('loginSection');
+      const userEmail = document.getElementById('userEmail');
+      
+      authSection.style.display = 'flex';
+      loginSection.style.display = 'none';
+      userEmail.textContent = userData.email;
+    }
+    
     const balance = LocalStorage.getTokenBalance();
     LocalStorage.setTokenBalance(balance);
   }
@@ -832,21 +856,7 @@
     }
   }
 
-  // Add sample activity for demo (remove in production)
-  function addSampleActivity() {
-    if (LocalStorage.getActivity().length === 0) {
-      const sampleActivities = [
-        { type: 'Image Generation', date: new Date().toISOString() },
-        { type: 'Voice Clone', date: new Date().toISOString() },
-        { type: 'Face Swap', date: new Date().toISOString() }
-      ];
-      sampleActivities.forEach(activity => LocalStorage.addActivity(activity));
-      LocalStorage.updateStats(3, 15);
-    }
-  }
-
   // Initialize
-  addSampleActivity();
   updateDashboard();
 </script>
 

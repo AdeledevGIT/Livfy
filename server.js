@@ -291,8 +291,12 @@ app.get('/generate.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'generate.html'));
 });
 
-app.get('/generate.html', (req, res) => {
+app.get('/home.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'home.html'));
+});
+
+app.get('/voice.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'voice.html'));
 });
 
 app.get('/dashboard.html', (req, res) => {

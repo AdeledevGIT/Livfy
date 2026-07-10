@@ -81,7 +81,7 @@
     .hdr-right { display:flex; align-items:center; gap:10px; }
 
     /* ── MAIN LAYOUT ─────────────────────────────────── */
-    .main { max-width:1280px; margin:0 auto; padding:36px 28px 100px; }
+    .main { max-width:1280px; margin:0 auto; padding:36px 28px 48px; }
 
     /* ── DASHBOARD GRID ──────────────────────────────── */
     .dashboard-grid {
@@ -99,6 +99,16 @@
       transition:all .3s;
     }
     .card:hover { border-color:rgba(255,45,111,.3); transform:translateY(-4px); }
+    .card:focus-visible,
+    .action-card:focus-visible,
+    .topup-option:focus-visible,
+    .action-btn:focus-visible,
+    .banner-btn:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline:2px solid var(--cyan);
+      outline-offset:2px;
+    }
     
     .card-header {
       display:flex; align-items:center; justify-content:space-between;
@@ -114,6 +124,11 @@
       display:flex; align-items:center; justify-content:center;
     }
     .card-ico svg { width:14px; height:14px; stroke:var(--accent); }
+    /* category tints so cards are scannable at a glance, not all one color */
+    .card-ico.violet { background:rgba(192,132,252,.15); }
+    .card-ico.violet svg { stroke:var(--violet); }
+    .card-ico.cyan { background:rgba(0,200,255,.15); }
+    .card-ico.cyan svg { stroke:var(--cyan); }
     
     .card-value {
       font-size:32px; font-weight:800; margin-bottom:8px;
@@ -179,7 +194,8 @@
     .chart-header { display:flex; justify-content:space-between; margin-bottom:12px; }
     .chart-label { font-size:12px; color:var(--txt2); }
     .chart-bars { display:flex; align-items:end; gap:4px; height:80px; }
-    .chart-bar { flex:1; background:var(--grad); border-radius:2px 2px 0 0; transition:height .5s ease; }
+    .chart-bar { flex:1; background:var(--cyan); opacity:.75; border-radius:2px 2px 0 0; transition:height .5s ease, opacity .2s; }
+    .chart-bar:hover { opacity:1; }
     .chart-day { font-size:10px; color:var(--txt3); text-align:center; margin-top:4px; }
 
     /* ── RECENT ACTIVITY ─────────────────────────────── */
@@ -224,43 +240,37 @@
     .toast.ok  { border-color:rgba(16,185,129,.35); color:#86efac; }
     .toast.err { border-color:rgba(239,68,68,.35);  color:#fca5a5; }
 
-    /* ── HERO SECTION ─────────────────────────────────── */
+    /* ── QUICK ACTIONS STRIP (compact, sits below the stats) ── */
     .hero-section {
-      display:grid;
-      grid-template-columns:1fr 380px;
-      gap:36px;
-      margin-bottom:48px;
+      margin-bottom:36px;
     }
     .hero-content {
       display:flex;
-      flex-direction:column;
-      justify-content:center;
+      align-items:baseline;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:18px;
     }
     .hero-badge {
       display:flex;
       align-items:center;
       gap:8px;
-      padding:8px 16px;
+      padding:6px 14px;
       border-radius:100px;
       background:rgba(255,45,111,.08);
       border:1px solid rgba(255,45,111,.22);
-      font-size:11px;
+      font-size:10px;
       font-weight:700;
       color:var(--pink);
       letter-spacing:.08em;
       text-transform:uppercase;
-      margin-bottom:20px;
       width:fit-content;
     }
     .hero-content h1 {
-      font-size:52px;
-      font-weight:900;
-      line-height:1.1;
-      margin-bottom:16px;
-      background:linear-gradient(135deg,#fff 0%,var(--txt2) 100%);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
+      font-size:22px;
+      font-weight:800;
+      line-height:1.2;
     }
     .hero-content h1 span {
       background:var(--grad);
@@ -269,25 +279,26 @@
       background-clip:text;
     }
     .hero-description {
-      font-size:16px;
+      font-size:13px;
       color:var(--txt2);
-      line-height:1.7;
-      max-width:540px;
-      margin-bottom:32px;
+      line-height:1.5;
+      width:100%;
+      margin-top:-6px;
     }
     
     /* ── MAIN ACTION BUTTONS ──────────────────────────── */
     .main-actions {
       display:flex;
-      flex-direction:column;
+      flex-direction:row;
       gap:16px;
     }
     .action-btn {
       display:flex;
       align-items:center;
-      gap:16px;
-      padding:24px 28px;
-      border-radius:16px;
+      gap:14px;
+      flex:1;
+      padding:16px 18px;
+      border-radius:14px;
       text-decoration:none;
       transition:all .3s cubic-bezier(.34,1.56,.64,1);
       position:relative;
@@ -321,9 +332,9 @@
       box-shadow:0 8px 32px rgba(0,200,255,.2);
     }
     .btn-icon {
-      width:56px;
-      height:56px;
-      border-radius:12px;
+      width:40px;
+      height:40px;
+      border-radius:10px;
       background:rgba(255,45,111,.15);
       display:flex;
       align-items:center;
@@ -334,8 +345,8 @@
       background:rgba(0,200,255,.15);
     }
     .btn-icon svg {
-      width:28px;
-      height:28px;
+      width:20px;
+      height:20px;
       stroke:var(--accent);
     }
     .action-btn.secondary .btn-icon svg {
@@ -343,23 +354,27 @@
     }
     .btn-content {
       flex:1;
+      min-width:0;
     }
     .btn-title {
       display:block;
-      font-size:18px;
+      font-size:14px;
       font-weight:700;
       color:var(--txt);
-      margin-bottom:4px;
+      margin-bottom:2px;
     }
     .btn-subtitle {
       display:block;
-      font-size:13px;
+      font-size:11px;
       color:var(--txt2);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .btn-arrow {
-      width:40px;
-      height:40px;
-      border-radius:10px;
+      width:32px;
+      height:32px;
+      border-radius:9px;
       background:rgba(255,255,255,.06);
       display:flex;
       align-items:center;
@@ -377,63 +392,9 @@
       stroke:var(--txt2);
     }
     
-    /* ── FEATURE PREVIEW CARDS ────────────────────────── */
-    .feature-preview {
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
-    .preview-card {
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:20px;
-      transition:all .3s;
-    }
-    .preview-card:hover {
-      border-color:rgba(255,45,111,.3);
-      transform:translateY(-2px);
-    }
-    .preview-header {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-bottom:16px;
-    }
-    .preview-icon {
-      width:36px;
-      height:36px;
-      border-radius:10px;
-      background:rgba(255,45,111,.15);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .preview-header span {
-      font-size:14px;
-      font-weight:600;
-      color:var(--txt);
-    }
-    .preview-features {
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .feature-item {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-size:12px;
-      color:var(--txt2);
-    }
-    .feature-item svg {
-      width:14px;
-      height:14px;
-      stroke:var(--green);
-    }
-
-    /* ── BOTTOM BANNER ───────────────────────────────── */
+    /* ── BOTTOM BANNER (mobile only — desktop already shows quick actions inline further up) ── */
     .bottom-banner {
+      display:none;
       position:fixed;
       bottom:0;
       left:0;
@@ -443,7 +404,6 @@
       border-top:1px solid var(--border);
       padding:16px 28px;
       z-index:400;
-      display:flex;
       align-items:center;
       justify-content:center;
       gap:16px;
@@ -500,32 +460,18 @@
     @media(max-width:780px) {
       .dashboard-grid { grid-template-columns:1fr; }
       .quick-actions { grid-template-columns:1fr; }
-      .hero-section {
-        grid-template-columns:1fr;
-        gap:24px;
+      /* on small screens the inline quick actions scroll out of reach, so bring back
+         the fixed bottom banner as the persistent way to reach Generate / Face Swap */
+      .bottom-banner { display:flex; }
+      .main { padding-bottom:96px; }
+      .main-actions {
+        flex-direction:column;
       }
       .hero-content h1 {
-        font-size:36px;
+        font-size:19px;
       }
       .hero-description {
-        font-size:14px;
-      }
-      .action-btn {
-        padding:20px;
-      }
-      .btn-icon {
-        width:48px;
-        height:48px;
-      }
-      .btn-icon svg {
-        width:24px;
-        height:24px;
-      }
-      .btn-title {
-        font-size:16px;
-      }
-      .btn-subtitle {
-        font-size:12px;
+        font-size:13px;
       }
       .bottom-banner {
         padding:12px 16px;
@@ -562,99 +508,6 @@
 
 <!-- ── MAIN ────────────────────────────────────────────────────── -->
 <main class="main">
-  <!-- ── HERO SECTION WITH MAIN ACTIONS ─────────────────────── -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <div class="hero-badge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-        <span>AI-Powered Creative Suite</span>
-      </div>
-      <h1>Create with <span>AI Magic</span></h1>
-      <p class="hero-description">Transform your ideas into stunning visuals with our advanced AI generation tools. From face swaps to video generation, bring your creative vision to life.</p>
-      
-      <!-- Main Action Buttons -->
-      <div class="main-actions">
-        <a href="generate.html" class="action-btn primary">
-          <div class="btn-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
-          </div>
-          <div class="btn-content">
-            <span class="btn-title">Generate Content</span>
-            <span class="btn-subtitle">Image & Video AI Generation</span>
-          </div>
-          <div class="btn-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </div>
-        </a>
-        
-        <a href="indes.html" class="action-btn secondary">
-          <div class="btn-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-          <div class="btn-content">
-            <span class="btn-title">Face Swap</span>
-            <span class="btn-subtitle">Real-time AI Face Replacement</span>
-          </div>
-          <div class="btn-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </div>
-        </a>
-      </div>
-    </div>
-    
-    <!-- Feature Preview Cards -->
-    <div class="feature-preview">
-      <div class="preview-card generate-preview">
-        <div class="preview-header">
-          <div class="preview-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
-          </div>
-          <span>AI Generation</span>
-        </div>
-        <div class="preview-body">
-          <div class="preview-features">
-            <div class="feature-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Image to Image</span>
-            </div>
-            <div class="feature-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Image to Video</span>
-            </div>
-            <div class="feature-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Video to Video</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="preview-card swap-preview">
-        <div class="preview-header">
-          <div class="preview-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-          <span>Face Swap</span>
-        </div>
-        <div class="preview-body">
-          <div class="preview-features">
-            <div class="feature-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Real-time Processing</span>
-            </div>
-            <div class="feature-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>High Quality Output</span>
-            </div>
-            <div class="feature-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Multiple Formats</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- ── DASHBOARD CARDS ─────────────────────────────── -->
   <div class="dashboard-grid">
@@ -663,7 +516,7 @@
       <div class="balance-content">
         <div class="card-header">
           <div class="card-title">
-            <div class="card-ico">
+            <div class="card-ico violet">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
             </div>
             <span>Token Balance</span>
@@ -698,7 +551,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-title">
-          <div class="card-ico">
+          <div class="card-ico cyan">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </div>
           <span>Generations Today</span>
@@ -736,7 +589,7 @@
     <div class="card">
       <div class="card-header">
         <div class="card-title">
-          <div class="card-ico">
+          <div class="card-ico cyan">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
           </div>
           <span>Usage Last 7 Days</span>
@@ -760,11 +613,52 @@
     </div>
   </div>
 
+  <!-- ── QUICK ACTIONS (compact — stats lead, actions follow) ─────────────────────── -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Create with <span>AI Magic</span></h1>
+      <div class="hero-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span>AI-Powered Creative Suite</span>
+      </div>
+      <p class="hero-description">Turn your ideas into images and video, or swap a face in seconds.</p>
+    </div>
+
+    <!-- Main Action Buttons -->
+    <div class="main-actions">
+      <a href="generate.html" class="action-btn primary">
+        <div class="btn-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+        </div>
+        <div class="btn-content">
+          <span class="btn-title">Generate Content</span>
+          <span class="btn-subtitle">Image & Video AI Generation</span>
+        </div>
+        <div class="btn-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </div>
+      </a>
+
+      <a href="indes.html" class="action-btn secondary">
+        <div class="btn-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="btn-content">
+          <span class="btn-title">Face Swap</span>
+          <span class="btn-subtitle">Real-time AI Face Replacement</span>
+        </div>
+        <div class="btn-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </div>
+      </a>
+    </div>
+  </section>
+
   <!-- ── RECENT ACTIVITY ─────────────────────────────── -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">
-        <div class="card-ico">
+        <div class="card-ico violet">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
         </div>
         <span>Recent Activity</span>

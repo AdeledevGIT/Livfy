@@ -168,25 +168,33 @@ app.get('/api/user/activity', authenticateFirebaseToken, async (req, res) => {
     const db = admin.firestore();
     
     // Query recent generations for the user
-    const generationsQuery = await db.collection('generations')
-      .where('userId', '==', uid)
-      .orderBy('createdAt', 'desc')
-      .limit(parseInt(limit))
-      .get();
-    
-    const activities = [];
-    generationsQuery.forEach(doc => {
-      const data = doc.data();
-      activities.push({
-        id: doc.id,
-        ...data
+    // Handle case where collection might not exist
+    let activities = [];
+    try {
+      const generationsQuery = await db.collection('generations')
+        .where('userId', '==', uid)
+        .orderBy('createdAt', 'desc')
+        .limit(parseInt(limit))
+        .get();
+      
+      generationsQuery.forEach(doc => {
+        const data = doc.data();
+        activities.push({
+          id: doc.id,
+          ...data
+        });
       });
-    });
+    } catch (queryError) {
+      console.log('No generations collection or query failed, returning empty activity');
+      // Return empty activities if collection doesn't exist or query fails
+      activities = [];
+    }
     
     res.json({ activities });
   } catch (error) {
     console.error('Error fetching user activity:', error);
-    res.status(500).json({ error: 'Failed to fetch user activity' });
+    // Return empty activities instead of error to prevent UI breakage
+    res.json({ activities: [] });
   }
 });
 

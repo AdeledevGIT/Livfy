@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Livfy — Dashboard</title>
+<title>Livfy — Voice Clone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,450&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -102,8 +102,7 @@
   }
 
   /* ============================================================
-     TOP NAV (desktop) — quiet wordmark, plain text links,
-     balance is a small pill, not a stat card.
+     TOP NAV (desktop)
   ============================================================ */
   .topnav {
     height:var(--nav-h);
@@ -155,7 +154,7 @@
     gap:10px;
   }
 
-  /* balance — small, quiet, expandable. never the loudest thing on screen */
+  /* balance — small, quiet, expandable */
   .balance-pill {
     position:relative;
   }
@@ -232,24 +231,11 @@
     padding:44px 28px 64px;
   }
 
-  /* ── Greeting, with the waveform signature behind it ──────── */
+  /* ── Greeting ──────── */
   .greeting {
     position:relative;
     padding:8px 0 34px;
     margin-bottom:8px;
-  }
-  .greeting-wave {
-    position:absolute;
-    left:-8px; right:-8px; bottom:6px;
-    height:46px;
-    opacity:.5;
-    pointer-events:none;
-  }
-  .greeting-wave path {
-    fill:none;
-    stroke:url(#waveGrad);
-    stroke-width:1.5;
-    stroke-linecap:round;
   }
   .greeting h1 {
     position:relative;
@@ -267,66 +253,150 @@
     max-width:440px;
   }
 
-  /* ── Tool tiles — the front door. Inviting, not dense. ────── */
-  .tools {
+  /* ── Voice Tool Section ────── */
+  .voice-tool {
     display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:14px;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
     margin-bottom:40px;
   }
-  .tool-tile {
-    display:flex;
-    flex-direction:column;
-    gap:16px;
-    padding:22px 20px;
-    border-radius:var(--radius-lg);
+  .tool-panel {
     background:var(--surface);
     border:1px solid var(--line);
-    transition:transform .22s cubic-bezier(.2,.8,.3,1), border-color .22s, background .22s;
+    border-radius:var(--radius-lg);
+    padding:24px;
+    transition:border-color .22s, background .22s;
   }
-  .tool-tile:hover {
-    transform:translateY(-3px);
+  .tool-panel:hover {
     border-color:var(--line-hi);
     background:var(--surface-hi);
   }
-  .tool-tile .ico {
-    width:38px; height:38px;
-    border-radius:11px;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .tool-tile .ico svg { width:19px; height:19px; stroke-width:1.6; }
-  .tool-tile.generate .ico { background:var(--pink-wash); }
-  .tool-tile.generate .ico svg { stroke:var(--pink); }
-  .tool-tile.voice .ico { background:var(--cyan-wash); }
-  .tool-tile.voice .ico svg { stroke:var(--cyan); }
-  .tool-tile.face .ico { background:var(--violet-wash); }
-  .tool-tile.face .ico svg { stroke:var(--violet); }
-
-  .tool-tile h3 {
-    font-size:15.5px;
-    font-weight:600;
-    margin-bottom:4px;
+  .tool-header {
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:12px;
+    margin-bottom:20px;
   }
-  .tool-tile p {
-    font-size:12.8px;
-    color:var(--text-dim);
-    line-height:1.5;
-  }
-  .tag-consent {
-    font-size:9.5px;
-    font-weight:700;
-    letter-spacing:.04em;
-    text-transform:uppercase;
-    color:var(--cyan);
+  .tool-icon {
+    width:40px; height:40px;
+    border-radius:11px;
     background:var(--cyan-wash);
-    padding:2px 7px;
-    border-radius:100px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tool-icon svg { width:20px; height:20px; stroke:var(--cyan); }
+  .tool-title {
+    font-size:18px;
+    font-weight:600;
+  }
+  .tool-desc {
+    font-size:13px;
+    color:var(--text-dim);
+    margin-bottom:16px;
+  }
+  .upload-area {
+    border:2px dashed var(--line-hi);
+    border-radius:var(--radius-md);
+    padding:32px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .2s, background .2s;
+  }
+  .upload-area:hover {
+    border-color:var(--cyan);
+    background:var(--cyan-wash);
+  }
+  .upload-area svg {
+    width:32px; height:32px;
+    stroke:var(--text-faint);
+    margin:0 auto 12px;
+  }
+  .upload-area p {
+    font-size:13px;
+    color:var(--text-dim);
+  }
+  .upload-area span {
+    color:var(--cyan);
+    font-weight:600;
   }
 
-  /* ── Trust strip — plain reassurance, said once, said plainly ── */
+  /* ── Text Input ────── */
+  .text-input {
+    width:100%;
+    min-height:120px;
+    padding:16px;
+    border-radius:var(--radius-md);
+    background:var(--bg-soft);
+    border:1px solid var(--line);
+    color:var(--text);
+    font-family:inherit;
+    font-size:14px;
+    resize:vertical;
+    transition:border-color .2s;
+  }
+  .text-input:focus {
+    outline:none;
+    border-color:var(--cyan);
+  }
+  .text-input::placeholder {
+    color:var(--text-faint);
+  }
+
+  /* ── Action Button ────── */
+  .action-btn {
+    width:100%;
+    padding:14px;
+    border-radius:var(--radius-md);
+    background:var(--grad);
+    color:#fff;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:background .15s, transform .15s;
+    margin-top:16px;
+  }
+  .action-btn:hover {
+    background:linear-gradient(135deg,#c084fc,#00c8ff);
+    transform:translateY(-2px);
+  }
+
+  /* ── Recent Voices ────── */
+  .section-head {
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .section-head h2 {
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .voices-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:14px;
+  }
+  .voice-card {
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:16px;
+    transition:border-color .2s;
+  }
+  .voice-card:hover {
+    border-color:var(--line-hi);
+  }
+  .voice-name {
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .voice-meta {
+    font-size:11px;
+    color:var(--text-faint);
+  }
+
+  /* ── Trust strip ────── */
   .trust-strip {
     display:flex;
     gap:28px;
@@ -346,7 +416,7 @@
   }
   .trust-item svg {
     width:16px; height:16px;
-    stroke:var(--pink);
+    stroke:var(--cyan);
     stroke-width:1.8;
     flex-shrink:0;
     margin-top:1px;
@@ -358,92 +428,8 @@
   }
   .trust-item strong { color:var(--text); font-weight:600; }
 
-  /* ── Section heading pattern ───────────────────────────────── */
-  .section-head {
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    margin-bottom:16px;
-  }
-  .section-head h2 {
-    font-size:14.5px;
-    font-weight:600;
-    color:var(--text);
-  }
-  .section-head a {
-    font-size:12.5px;
-    color:var(--text-dim);
-    font-weight:500;
-  }
-  .section-head a:hover { color:var(--text); }
-
-  /* ── Recent creations ──────────────────────────────────────── */
-  .creations {
-    display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:12px;
-    margin-bottom:36px;
-  }
-  .creation-card {
-    aspect-ratio:1;
-    border-radius:var(--radius-md);
-    background:var(--surface);
-    border:1px solid var(--line);
-    position:relative;
-    overflow:hidden;
-    display:flex;
-    align-items:flex-end;
-    transition:border-color .2s;
-  }
-  .creation-card:hover { border-color:var(--line-hi); }
-  .creation-card .swatch {
-    position:absolute; inset:0;
-  }
-  .creation-card.c1 .swatch { background:linear-gradient(155deg, #3a3f2e, #556647); }
-  .creation-card.c2 .swatch { background:linear-gradient(155deg, #2c3a3c, var(--cyan) 180%); opacity:.35; }
-  .creation-card.c3 .swatch { background:linear-gradient(155deg, #3c322c, var(--pink) 180%); opacity:.3; }
-  .creation-card .meta {
-    position:relative;
-    width:100%;
-    padding:10px;
-    background:linear-gradient(0deg, rgba(0,0,0,.55), transparent);
-    font-size:11px;
-    color:#f0f4ff;
-    display:flex;
-    align-items:center;
-    gap:5px;
-  }
-  .creation-card .meta svg { width:11px; height:11px; stroke:currentColor; opacity:.8; }
-
-  .creation-empty {
-    grid-column:1 / -1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:36px 20px;
-    border-radius:var(--radius-md);
-    border:1px dashed var(--line-hi);
-    text-align:center;
-  }
-  .creation-empty svg { width:22px; height:22px; stroke:var(--text-faint); }
-  .creation-empty p { font-size:12.5px; color:var(--text-dim); max-width:260px; }
-
-  /* ── Quiet stats line — text, not cards ────────────────────── */
-  .stats-line {
-    display:flex;
-    flex-wrap:wrap;
-    gap:20px;
-    padding:16px 4px 0;
-    border-top:1px solid var(--line);
-    font-size:12.5px;
-    color:var(--text-faint);
-  }
-  .stats-line b { color:var(--text-dim); font-weight:600; }
-
   /* ============================================================
-     BOTTOM TAB BAR — mobile app pattern, hidden on desktop
+     BOTTOM TAB BAR — mobile
   ============================================================ */
   .tabbar {
     display:none;
@@ -453,8 +439,7 @@
      RESPONSIVE
   ============================================================ */
   @media (max-width:860px) {
-    .tools { grid-template-columns:1fr; }
-    .creations { grid-template-columns:repeat(2, 1fr); }
+    .voice-tool { grid-template-columns:1fr; }
   }
 
   @media (max-width:780px) {
@@ -491,10 +476,6 @@
     .tabbar a.active { color:var(--pink); }
     .tabbar a.active svg { stroke:var(--pink); }
   }
-
-  @media (max-width:420px) {
-    .creations { grid-template-columns:repeat(2, 1fr); }
-  }
 </style>
 </head>
 <body>
@@ -507,9 +488,9 @@
   </div>
 
   <div class="nav-links">
-    <a href="dashboard.html" class="active">Dashboard</a>
+    <a href="dashboard.html">Dashboard</a>
     <a href="generate.html">Generate</a>
-    <a href="voice.html">Voice Clone</a>
+    <a href="voice.html" class="active">Voice Clone</a>
     <a href="indes.html">Face Swap</a>
   </div>
 
@@ -545,93 +526,82 @@
 <main class="main">
   <!-- ── Greeting ───────────────────────────────────────────── -->
   <div class="greeting">
-    <svg class="greeting-wave" viewBox="0 0 400 46" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:var(--pink);stop-opacity:0.6" />
-          <stop offset="50%" style="stop-color:var(--violet);stop-opacity:0.4" />
-          <stop offset="100%" style="stop-color:var(--cyan);stop-opacity:0.6" />
-        </linearGradient>
-      </defs>
-      <path d="M0,23 Q50,10 100,23 T200,23 T300,23 T400,23" />
-    </svg>
-    <h1>Welcome back</h1>
-    <p>Your creative dashboard is ready. Track your generations, manage tokens, and explore AI-powered tools.</p>
+    <h1>Voice Clone Studio</h1>
+    <p>Clone voices or generate realistic speech from text with our advanced AI technology.</p>
   </div>
 
-  <!-- ── Tool tiles ───────────────────────────────────────────── -->
-  <div class="tools">
-    <a href="generate.html" class="tool-tile generate">
-      <div class="ico">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+  <!-- ── Voice Tool ───────────────────────────────────────────── -->
+  <div class="voice-tool">
+    <div class="tool-panel">
+      <div class="tool-header">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </div>
+        <div class="tool-title">Voice Cloning</div>
       </div>
-      <div>
-        <h3>Generate <span class="tag-consent">New</span></h3>
-        <p>Create stunning AI-generated images and videos with text prompts.</p>
+      <p class="tool-desc">Upload an audio sample to clone a voice. The AI will learn the unique characteristics and create a digital voice model.</p>
+      <div class="upload-area">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <p><span>Click to upload</span> or drag and drop</p>
+        <p style="font-size:11px;color:var(--text-faint);margin-top:4px;">MP3, WAV up to 10MB</p>
       </div>
-    </a>
+      <button class="action-btn">Clone Voice</button>
+    </div>
 
-    <a href="voice.html" class="tool-tile voice">
-      <div class="ico">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+    <div class="tool-panel">
+      <div class="tool-header">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        </div>
+        <div class="tool-title">Text to Speech</div>
       </div>
-      <div>
-        <h3>Voice Clone</h3>
-        <p>Clone voices or generate realistic speech from text.</p>
-      </div>
-    </a>
-
-    <a href="indes.html" class="tool-tile face">
-      <div class="ico">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      </div>
-      <div>
-        <h3>Face Swap</h3>
-        <p>Swap faces in photos and videos with AI precision.</p>
-      </div>
-    </a>
+      <p class="tool-desc">Enter text and generate speech using cloned voices or our default AI voices.</p>
+      <textarea class="text-input" placeholder="Enter the text you want to convert to speech..."></textarea>
+      <button class="action-btn">Generate Speech</button>
+    </div>
   </div>
 
   <!-- ── Trust strip ─────────────────────────────────────────── -->
   <div class="trust-strip">
     <div class="trust-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-      <span><strong>Secure & Private</strong> — Your data stays yours</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <span><strong>Privacy First</strong> — Your voice data is encrypted</span>
     </div>
     <div class="trust-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-      <span><strong>Fast Generation</strong> — Results in seconds</span>
+      <span><strong>Fast Processing</strong> — Clone in seconds</span>
     </div>
     <div class="trust-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-      <span><strong>High Quality</strong> — Professional outputs</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span><strong>Natural Sounding</strong> — Human-like quality</span>
     </div>
   </div>
 
-  <!-- ── Recent Activity Section ──────────────────────────────── -->
+  <!-- ── Recent Voices ───────────────────────────────────────── -->
   <div class="section-head">
-    <h2>Recent Activity</h2>
-    <a href="#">View all</a>
+    <h2>Your Voice Models</h2>
+    <a href="#" style="font-size:12.5px;color:var(--text-dim);font-weight:500;">View all</a>
   </div>
 
-  <div class="creations" id="recentActivity">
-    <div class="creation-empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-      <p>No recent activity yet. Start creating to see your generations here.</p>
+  <div class="voices-grid">
+    <div class="voice-card">
+      <div class="voice-name">Custom Voice #1</div>
+      <div class="voice-meta">Created 2 days ago</div>
     </div>
-  </div>
-
-  <!-- ── Stats line ───────────────────────────────────────────── -->
-  <div class="stats-line">
-    <span>Total generations: <b id="totalGenerations">0</b></span>
-    <span>Tokens used: <b id="tokensUsed">0</b></span>
-    <span>Account created: <b id="accountCreated">-</b></span>
+    <div class="voice-card">
+      <div class="voice-name">Custom Voice #2</div>
+      <div class="voice-meta">Created 5 days ago</div>
+    </div>
+    <div class="voice-card">
+      <div class="voice-name">Default AI Voice</div>
+      <div class="voice-meta">Pre-installed</div>
+    </div>
   </div>
 </main>
 
 <!-- ── BOTTOM TAB BAR (mobile) ───────────────────────────────── -->
 <nav class="tabbar">
-  <a href="dashboard.html" class="active">
+  <a href="dashboard.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
     <span>Home</span>
   </a>
@@ -639,7 +609,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
     <span>Create</span>
   </a>
-  <a href="voice.html">
+  <a href="voice.html" class="active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
     <span>Voice</span>
   </a>
@@ -663,52 +633,11 @@
   // Initialize Firebase
   const app = window.firebaseApp(firebaseConfig);
   const auth = window.firebaseAuth(app);
-  const db = window.getFirestore(app);
 
   // Local Storage Management
   const LocalStorage = {
-    getUserData() {
-      const data = localStorage.getItem('livfy_user');
-      return data ? JSON.parse(data) : null;
-    },
-    
-    setUserData(userData) {
-      localStorage.setItem('livfy_user', JSON.stringify(userData));
-    },
-    
-    getActivity() {
-      const data = localStorage.getItem('livfy_activity');
-      return data ? JSON.parse(data) : [];
-    },
-    
-    addActivity(activity) {
-      const activities = this.getActivity();
-      activities.unshift(activity);
-      // Keep only last 20 activities
-      if (activities.length > 20) activities.pop();
-      localStorage.setItem('livfy_activity', JSON.stringify(activities));
-    },
-    
-    getStats() {
-      return {
-        totalGenerations: parseInt(localStorage.getItem('livfy_total_generations') || '0'),
-        tokensUsed: parseInt(localStorage.getItem('livfy_tokens_used') || '0'),
-        accountCreated: localStorage.getItem('livfy_account_created') || null
-      };
-    },
-    
-    updateStats(generations = 0, tokens = 0) {
-      const stats = this.getStats();
-      localStorage.setItem('livfy_total_generations', String(stats.totalGenerations + generations));
-      localStorage.setItem('livfy_tokens_used', String(stats.tokensUsed + tokens));
-    },
-    
     getTokenBalance() {
       return parseInt(localStorage.getItem('livfy_token_balance') || '100');
-    },
-    
-    setTokenBalance(balance) {
-      localStorage.setItem('livfy_token_balance', String(balance));
     }
   };
 
@@ -719,45 +648,24 @@
     const userEmail = document.getElementById('userEmail');
 
     if (user) {
-      // User is signed in
       authSection.style.display = 'flex';
       loginSection.style.display = 'none';
       userEmail.textContent = user.email;
-      
-      // Save user data to local storage
-      LocalStorage.setUserData({
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        lastLogin: new Date().toISOString()
-      });
-      
-      // Set account created date if not exists
-      if (!LocalStorage.getStats().accountCreated) {
-        localStorage.setItem('livfy_account_created', new Date().toLocaleDateString());
-      }
-      
-      // Load user data from Firestore
-      loadUserData(user.uid);
     } else {
-      // User is signed out
       authSection.style.display = 'none';
       loginSection.style.display = 'block';
-      
-      // Load from local storage as fallback
-      loadLocalData();
     }
     
-    // Update UI
-    updateDashboard();
+    // Update token balance
+    const balance = LocalStorage.getTokenBalance();
+    document.getElementById('tokenBalance').textContent = balance;
+    document.getElementById('panelTokenBalance').textContent = balance;
   });
 
   // Logout functionality
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     try {
       await window.signOut(auth);
-      // Clear local storage (optional, keeping for demo)
-      // localStorage.clear();
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -773,81 +681,6 @@
   document.addEventListener('click', () => {
     balancePill.classList.remove('open');
   });
-
-  // Load user data from Firestore
-  async function loadUserData(uid) {
-    try {
-      const userDoc = await window.getDoc(window.doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        LocalStorage.setTokenBalance(data.tokenBalance || 100);
-        
-        if (data.activity && data.activity.length > 0) {
-          localStorage.setItem('livfy_activity', JSON.stringify(data.activity));
-        }
-        
-        if (data.stats) {
-          localStorage.setItem('livfy_total_generations', String(data.stats.totalGenerations || 0));
-          localStorage.setItem('livfy_tokens_used', String(data.stats.tokensUsed || 0));
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
-  }
-
-  // Load local data as fallback
-  function loadLocalData() {
-    const balance = LocalStorage.getTokenBalance();
-    LocalStorage.setTokenBalance(balance);
-  }
-
-  // Update dashboard UI
-  function updateDashboard() {
-    const balance = LocalStorage.getTokenBalance();
-    const stats = LocalStorage.getStats();
-    const activities = LocalStorage.getActivity();
-
-    // Update token balance
-    document.getElementById('tokenBalance').textContent = balance;
-    document.getElementById('panelTokenBalance').textContent = balance;
-
-    // Update stats
-    document.getElementById('totalGenerations').textContent = stats.totalGenerations;
-    document.getElementById('tokensUsed').textContent = stats.tokensUsed;
-    document.getElementById('accountCreated').textContent = stats.accountCreated || '-';
-
-    // Update recent activity
-    const activityContainer = document.getElementById('recentActivity');
-    if (activities.length > 0) {
-      activityContainer.innerHTML = activities.slice(0, 4).map((activity, index) => `
-        <div class="creation-card c${(index % 3) + 1}">
-          <div class="swatch"></div>
-          <div class="meta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span>${activity.type}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-  }
-
-  // Add sample activity for demo (remove in production)
-  function addSampleActivity() {
-    if (LocalStorage.getActivity().length === 0) {
-      const sampleActivities = [
-        { type: 'Image Generation', date: new Date().toISOString() },
-        { type: 'Voice Clone', date: new Date().toISOString() },
-        { type: 'Face Swap', date: new Date().toISOString() }
-      ];
-      sampleActivities.forEach(activity => LocalStorage.addActivity(activity));
-      LocalStorage.updateStats(3, 15);
-    }
-  }
-
-  // Initialize
-  addSampleActivity();
-  updateDashboard();
 </script>
 
 </body>

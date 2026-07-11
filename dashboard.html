@@ -788,7 +788,7 @@
       const userDoc = await window.getDoc(window.doc(db, 'users', uid));
       if (userDoc.exists()) {
         const data = userDoc.data();
-        LocalStorage.setTokenBalance(data.tokenBalance || 100);
+        LocalStorage.setTokenBalance(data.tokens || 0);
         
         if (data.activity && data.activity.length > 0) {
           localStorage.setItem('livfy_activity', JSON.stringify(data.activity));

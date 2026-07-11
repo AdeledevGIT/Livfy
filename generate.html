@@ -739,9 +739,9 @@ async function initFirebase() {
       
       if (user) {
         currentUser = user;
-        authSection.style.display = 'flex';
-        loginSection.style.display = 'none';
-        userEmail.textContent = user.email.substring(0, 5) + '...';
+        if (authSection) authSection.style.display = 'flex';
+        if (loginSection) loginSection.style.display = 'none';
+        if (userEmail) userEmail.textContent = user.email.substring(0, 5) + '...';
         
         // Load user data from Firestore
         loadUserData(user.uid);
@@ -751,15 +751,15 @@ async function initFirebase() {
         await fetchAPIKey(token);
       } else {
         currentUser = null;
-        authSection.style.display = 'none';
-        loginSection.style.display = 'block';
+        if (authSection) authSection.style.display = 'none';
+        if (loginSection) loginSection.style.display = 'block';
         
         // Load from local storage as fallback
         const userData = JSON.parse(localStorage.getItem('livfy_user') || localStorage.getItem('user') || 'null');
         if (userData) {
-          authSection.style.display = 'flex';
-          loginSection.style.display = 'none';
-          userEmail.textContent = userData.email.substring(0, 5) + '...';
+          if (authSection) authSection.style.display = 'flex';
+          if (loginSection) loginSection.style.display = 'none';
+          if (userEmail) userEmail.textContent = userData.email.substring(0, 5) + '...';
           
           // Load user data from Firestore
           if (userData.uid) {
@@ -834,16 +834,17 @@ async function loadUserData(uid) {
     if (userDoc.exists()) {
       const data = userDoc.data();
       console.log('User data from Firestore:', data);
-      LocalStorage.setTokenBalance(data.tokenBalance || 0);
+      const balance = data.tokens || 0;
+      LocalStorage.setTokenBalance(balance);
       
       // Update UI with Firestore data
       const tokenBalanceEl = document.getElementById('tokenBalance');
       const panelTokenBalanceEl = document.getElementById('panelTokenBalance');
       
-      if (tokenBalanceEl) tokenBalanceEl.textContent = data.tokenBalance || 0;
-      if (panelTokenBalanceEl) panelTokenBalanceEl.textContent = data.tokenBalance || 0;
+      if (tokenBalanceEl) tokenBalanceEl.textContent = balance;
+      if (panelTokenBalanceEl) panelTokenBalanceEl.textContent = balance;
       
-      console.log('Balance updated to:', data.tokenBalance || 0);
+      console.log('Balance updated to:', balance);
     } else {
       console.log('User document does not exist in Firestore');
     }

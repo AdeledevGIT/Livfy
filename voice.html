@@ -690,11 +690,12 @@
       const userDoc = await window.getDoc(window.doc(db, 'users', uid));
       if (userDoc.exists()) {
         const data = userDoc.data();
-        LocalStorage.setTokenBalance(data.tokenBalance || 0);
+        const balance = data.tokens || 0;
+        LocalStorage.setTokenBalance(balance);
         
         // Update UI with Firestore data
-        document.getElementById('tokenBalance').textContent = data.tokenBalance || 0;
-        document.getElementById('panelTokenBalance').textContent = data.tokenBalance || 0;
+        document.getElementById('tokenBalance').textContent = balance;
+        document.getElementById('panelTokenBalance').textContent = balance;
       }
     } catch (error) {
       console.error('Error loading user data:', error);

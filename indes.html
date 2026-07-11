@@ -17,7 +17,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
     
     window.firebaseApp = initializeApp;
     window.firebaseAuth = getAuth;
@@ -26,6 +26,8 @@
     window.getFirestore = getFirestore;
     window.doc = doc;
     window.getDoc = getDoc;
+    window.updateDoc = updateDoc;
+    window.increment = increment;
   </script>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -800,7 +802,7 @@ const videoStage  = $('videoStage'),oLand       = $('oLand'),         oPport    
 const orientLabel = $('orientLabel');
 
 let photoBlob=null, orient='landscape', streaming=false;
-let camStream=null, timerSec=0, timerInterval=null;
+let camStream=null, timerSec=0, timerInterval=null, maxSeconds=0, currentBalance=0;
 
 let _tt;
 function toast(msg,kind='',ms=4200){
@@ -827,7 +829,23 @@ function sizeStage(){
 window.addEventListener('resize',sizeStage); sizeStage();
 
 function refreshBtn(){ streamBtn.disabled=!photoBlob; }
-function startTimer(){timerSec=0;clearInterval(timerInterval);timerInterval=setInterval(()=>{timerSec++;const t=fmt(timerSec);hudTimer.textContent=t;sDur.textContent=t;},1000);}
+function startTimer(){
+  timerSec=0;
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    timerSec++;
+    const t=fmt(timerSec);
+    hudTimer.textContent=t;
+    sDur.textContent=t;
+    
+    // Check if we've reached max seconds
+    if (timerSec >= maxSeconds) {
+      console.log(`Time limit reached: ${timerSec}s / ${maxSeconds}s`);
+      stopStream('Time limit reached. Tokens used: ' + (timerSec * 0.5).toFixed(1));
+      deductTokens(timerSec * 0.5);
+    }
+  },1000);
+}
 function stopTimer(){clearInterval(timerInterval);timerInterval=null;}
 function fmt(s){return s<60?`${s}s`:`${Math.floor(s/60)}m ${s%60}s`;}
 function showErr(msg){errBox.innerHTML=`${ICONS.warn}<span>${msg}</span>`;errBox.classList.add('show');}
@@ -835,6 +853,19 @@ function clearErr(){errBox.innerHTML='';errBox.classList.remove('show');}
 
 async function startStream(){
   clearErr(); streaming=true;
+  
+  // Check balance and calculate max seconds (0.5 tokens per second)
+  currentBalance = LocalStorage.getTokenBalance();
+  if (currentBalance <= 0) {
+    showErr('Insufficient tokens. Please top up your balance.');
+    toast('Insufficient tokens', 'err', 5000);
+    return;
+  }
+  
+  // Calculate max seconds: 1 token = 2 seconds (0.5 tokens/sec)
+  maxSeconds = Math.floor(currentBalance * 2);
+  console.log(`Current balance: ${currentBalance} tokens, Max streaming time: ${maxSeconds} seconds`);
+  
   streamBtn.style.display='none'; stopBtn.style.display='flex';
   vidLoading.classList.remove('hide'); vidPh.classList.add('hide');
   sizeStage(); setStatus('Connecting…','sp-live'); sState.textContent='Connecting';
@@ -875,14 +906,64 @@ async function stopStream(errMessage){
   vidHud.style.display='none'; vidLoading.classList.add('hide'); vidPh.classList.remove('hide');
   videoStage.classList.remove('live-glow'); sState.textContent='—'; sDur.textContent='0s';
   setStatus('Idle','sp-idle');
+  
+  // Deduct tokens if stream was stopped normally (not due to error)
+  if (!errMessage && timerSec > 0) {
+    const tokensUsed = timerSec * 0.5;
+    deductTokens(tokensUsed);
+  }
+  
   if(errMessage){showErr(errMessage);toast(errMessage,'err',6000);}
   else toast('Stream stopped.','',2200);
   refreshBtn();
 }
 
+// Deduct tokens from Firestore
+async function deductTokens(amount) {
+  try {
+    const tokensToDeduct = Math.ceil(amount);
+    console.log(`Deducting ${tokensToDeduct} tokens from balance`);
+    
+    if (currentUser) {
+      const userRef = window.doc(db, 'users', currentUser.uid);
+      await window.updateDoc(userRef, {
+        tokens: window.increment(-tokensToDeduct)
+      });
+      
+      // Update local storage and UI
+      const newBalance = currentBalance - tokensToDeduct;
+      LocalStorage.setTokenBalance(newBalance);
+      currentBalance = newBalance;
+      
+      const tokenBalanceEl = document.getElementById('tokenBalance');
+      const panelTokenBalanceEl = document.getElementById('panelTokenBalance');
+      if (tokenBalanceEl) tokenBalanceEl.textContent = newBalance;
+      if (panelTokenBalanceEl) panelTokenBalanceEl.textContent = newBalance;
+      
+      toast(`${tokensToDeduct} tokens deducted`, 'info', 3000);
+    }
+  } catch (error) {
+    console.error('Error deducting tokens:', error);
+  }
+}
+
 streamBtn.addEventListener('click',startStream);
 stopBtn.addEventListener('click',()=>stopStream());
 refreshBtn();
+
+// Handle tab close - deduct tokens if streaming
+window.addEventListener('beforeunload', (e) => {
+  if (streaming && timerSec > 0) {
+    const tokensUsed = timerSec * 0.5;
+    // Use sendBeacon to ensure request completes even when tab closes
+    const data = {
+      uid: currentUser?.uid,
+      tokensUsed: Math.ceil(tokensUsed),
+      timestamp: Date.now()
+    };
+    navigator.sendBeacon('/api/deduct-tokens', JSON.stringify(data));
+  }
+});
 </script>
 </body>
 </html>

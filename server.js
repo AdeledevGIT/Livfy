@@ -270,6 +270,32 @@ app.post('/api/ai/faceswap', authenticateFirebaseToken, (req, res) => {
   });
 });
 
+// Deduct tokens endpoint (for tab close scenario)
+app.post('/api/deduct-tokens', (req, res) => {
+  try {
+    const { uid, tokensUsed, timestamp } = req.body;
+    
+    if (!uid || !tokensUsed) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const db = admin.firestore();
+    const userRef = db.collection('users').doc(uid);
+    
+    // Deduct tokens
+    userRef.update({
+      tokens: admin.firestore.FieldValue.increment(-tokensUsed),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    console.log(`Deducted ${tokensUsed} tokens from user ${uid} (tab close)`);
+    res.json({ success: true, tokensDeducted: tokensUsed });
+  } catch (error) {
+    console.error('Error deducting tokens:', error);
+    res.status(500).json({ error: 'Failed to deduct tokens' });
+  }
+});
+
 // Serve existing pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

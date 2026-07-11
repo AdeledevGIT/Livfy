@@ -17,11 +17,15 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
     
     window.firebaseApp = initializeApp;
     window.firebaseAuth = getAuth;
     window.onAuthStateChanged = onAuthStateChanged;
     window.signOut = signOut;
+    window.getFirestore = getFirestore;
+    window.doc = doc;
+    window.getDoc = getDoc;
   </script>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -726,12 +730,13 @@ import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
 let firebaseConfig = null;
 let app = null;
 let auth = null;
+let db = null;
 let currentUser = null;
 
 // Local Storage Management
 const LocalStorage = {
   getTokenBalance() {
-    return parseInt(localStorage.getItem('livfy_token_balance') || '100');
+    return parseInt(localStorage.getItem('livfy_token_balance') || '0');
   },
   setTokenBalance(balance) {
     localStorage.setItem('livfy_token_balance', String(balance));
@@ -746,6 +751,7 @@ async function initFirebase() {
     
     app = window.firebaseApp(firebaseConfig);
     auth = window.firebaseAuth(app);
+    db = window.getFirestore(app);
     
     // Check if user is logged in
     window.onAuthStateChanged(auth, async (user) => {
@@ -762,10 +768,8 @@ async function initFirebase() {
         loginSection.style.display = 'none';
         userEmail.textContent = user.email.substring(0, 5) + '...';
         
-        // Update token balance from local storage
-        const balance = LocalStorage.getTokenBalance();
-        document.getElementById('tokenBalance').textContent = balance;
-        document.getElementById('panelTokenBalance').textContent = balance;
+        // Load user data from Firestore
+        loadUserData(user.uid);
         
         // Get token and fetch API key
         const token = await user.getIdToken();
@@ -782,9 +786,10 @@ async function initFirebase() {
           loginSection.style.display = 'none';
           userEmail.textContent = userData.email.substring(0, 5) + '...';
           
-          const balance = LocalStorage.getTokenBalance();
-          document.getElementById('tokenBalance').textContent = balance;
-          document.getElementById('panelTokenBalance').textContent = balance;
+          // Load user data from Firestore
+          if (userData.uid) {
+            loadUserData(userData.uid);
+          }
         } else {
           window.location.href = 'login.html';
         }
@@ -844,6 +849,23 @@ if (logoutBtn) {
     localStorage.removeItem('livfy_user');
     window.location.href = 'login.html';
   });
+}
+
+// Load user data from Firestore
+async function loadUserData(uid) {
+  try {
+    const userDoc = await window.getDoc(window.doc(db, 'users', uid));
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      LocalStorage.setTokenBalance(data.tokenBalance || 0);
+      
+      // Update UI with Firestore data
+      document.getElementById('tokenBalance').textContent = data.tokenBalance || 0;
+      document.getElementById('panelTokenBalance').textContent = data.tokenBalance || 0;
+    }
+  } catch (error) {
+    console.error('Error loading user data:', error);
+  }
 }
 
 // Initialize Firebase

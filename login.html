@@ -408,14 +408,28 @@ async function initFirebase() {
         // User is signed in, redirect to dashboard
         const token = user.getIdToken();
         token.then(idToken => {
-          localStorage.setItem('token', idToken);
-          localStorage.setItem('user', JSON.stringify({
+          const userData = {
             uid: user.uid,
             email: user.email,
             emailVerified: user.emailVerified,
             displayName: user.displayName
-          }));
+          };
+          localStorage.setItem('token', idToken);
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('livfy_user', JSON.stringify(userData));
           console.log('Redirecting to dashboard.html...');
+          window.location.href = 'dashboard.html';
+        }).catch(error => {
+          console.error('Error getting ID token:', error);
+          // Even if token retrieval fails, still store user info and redirect
+          const userData = {
+            uid: user.uid,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            displayName: user.displayName
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('livfy_user', JSON.stringify(userData));
           window.location.href = 'dashboard.html';
         });
       }
@@ -493,13 +507,15 @@ loginForm.addEventListener('submit', async (e) => {
     const user = userCredential.user;
     const token = await user.getIdToken();
     
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify({
+    const userData = {
       uid: user.uid,
       email: user.email,
       emailVerified: user.emailVerified,
       displayName: user.displayName
-    }));
+    };
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('livfy_user', JSON.stringify(userData));
     
     window.location.href = 'dashboard.html';
   } catch (error) {
@@ -541,14 +557,16 @@ googleBtn.addEventListener('click', async () => {
     const user = userCredential.user;
     const token = await user.getIdToken();
     
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify({
+    const userData = {
       uid: user.uid,
       email: user.email,
       emailVerified: user.emailVerified,
       displayName: user.displayName,
       photoURL: user.photoURL
-    }));
+    };
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('livfy_user', JSON.stringify(userData));
     
     window.location.href = 'dashboard.html';
   } catch (error) {

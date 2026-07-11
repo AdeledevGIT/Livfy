@@ -537,19 +537,20 @@
 </nav>
 
 <script type="module">
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyD_Uq2jHqYx6vP8r2sT3n4v5w6x7y8z9a0b",
-    authDomain: "livfy-ai.firebaseapp.com",
-    projectId: "livfy-ai",
-    storageBucket: "livfy-ai.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef123456"
-  };
-
-  // Initialize Firebase
-  const app = window.firebaseApp(firebaseConfig);
-  const auth = window.firebaseAuth(app);
+  // Firebase configuration dynamic loading
+  let app, auth;
+  try {
+    const response = await fetch('/api/firebase-config');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Firebase config: ${response.status}`);
+    }
+    const firebaseConfig = await response.json();
+    app = window.firebaseApp(firebaseConfig);
+    auth = window.firebaseAuth(app);
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    window.location.href = 'login.html';
+  }
 
   // Local Storage Management
   const LocalStorage = {
@@ -557,7 +558,7 @@
       return parseInt(localStorage.getItem('livfy_token_balance') || '100');
     },
     getUserData() {
-      const data = localStorage.getItem('livfy_user');
+      const data = localStorage.getItem('livfy_user') || localStorage.getItem('user');
       return data ? JSON.parse(data) : null;
     },
     getStats() {
@@ -569,6 +570,7 @@
     },
     setUserData(userData) {
       localStorage.setItem('livfy_user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userData));
     }
   };
 
@@ -631,6 +633,10 @@
     } catch (error) {
       console.error('Logout error:', error);
     }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('livfy_user');
+    window.location.href = 'login.html';
   });
 
   // Save profile changes

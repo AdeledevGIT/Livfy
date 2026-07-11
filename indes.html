@@ -681,7 +681,7 @@ async function initFirebase() {
         loginSection.style.display = 'block';
         
         // Load from local storage as fallback
-        const userData = JSON.parse(localStorage.getItem('livfy_user') || 'null');
+        const userData = JSON.parse(localStorage.getItem('livfy_user') || localStorage.getItem('user') || 'null');
         if (userData) {
           authSection.style.display = 'flex';
           loginSection.style.display = 'none';
@@ -747,6 +747,7 @@ if (logoutBtn) {
     }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('livfy_user');
     window.location.href = 'login.html';
   });
 }

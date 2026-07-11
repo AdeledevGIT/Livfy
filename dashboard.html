@@ -672,30 +672,32 @@
 </nav>
 
 <script type="module">
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyD_Uq2jHqYx6vP8r2sT3n4v5w6x7y8z9a0b",
-    authDomain: "livfy-ai.firebaseapp.com",
-    projectId: "livfy-ai",
-    storageBucket: "livfy-ai.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef123456"
-  };
-
-  // Initialize Firebase
-  const app = window.firebaseApp(firebaseConfig);
-  const auth = window.firebaseAuth(app);
-  const db = window.getFirestore(app);
+  // Firebase configuration dynamic loading
+  let app, auth, db;
+  try {
+    const response = await fetch('/api/firebase-config');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Firebase config: ${response.status}`);
+    }
+    const firebaseConfig = await response.json();
+    app = window.firebaseApp(firebaseConfig);
+    auth = window.firebaseAuth(app);
+    db = window.getFirestore(app);
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    window.location.href = 'login.html';
+  }
 
   // Local Storage Management
   const LocalStorage = {
     getUserData() {
-      const data = localStorage.getItem('livfy_user');
+      const data = localStorage.getItem('livfy_user') || localStorage.getItem('user');
       return data ? JSON.parse(data) : null;
     },
     
     setUserData(userData) {
       localStorage.setItem('livfy_user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userData));
     },
     
     getActivity() {
@@ -762,15 +764,17 @@
       // Load user data from Firestore
       loadUserData(user.uid);
     } else {
-      // User is signed out
-      authSection.style.display = 'none';
-      
-      // Load from local storage as fallback
+      // User is signed out or not authenticated
+      // Check for stored user data and token in localStorage
       const userData = LocalStorage.getUserData();
-      if (userData) {
-        authSection.style.display = 'flex';
-        userEmail.textContent = userData.email.substring(0, 5) + '...';
+      const token = localStorage.getItem('token');
+      
+      if (userData && token) {
+        // There's user data and a token in local storage, but Firebase auth state is not active
+        // Try to verify the token with the backend to confirm it's still valid
+        verifyStoredToken(token, userData);
       } else {
+        // No user data and no token, redirect to login
         window.location.href = 'login.html';
       }
     }
@@ -783,11 +787,13 @@
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     try {
       await window.signOut(auth);
-      // Clear local storage (optional, keeping for demo)
-      // localStorage.clear();
     } catch (error) {
       console.error('Logout error:', error);
     }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('livfy_user');
+    window.location.href = 'login.html';
   });
 
   // Balance pill toggle
@@ -879,6 +885,35 @@
 
   // Initialize
   updateDashboard();
+  
+  // Function to verify stored token with backend
+  async function verifyStoredToken(token, userData) {
+    try {
+      const response = await fetch('/api/auth/verify', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        // Token is valid, show authenticated UI
+        document.getElementById('authSection').style.display = 'flex';
+        document.getElementById('userEmail').textContent = userData.email.substring(0, 5) + '...';
+        
+        // Update UI with local data
+        updateDashboard();
+      } else {
+        // Token is invalid, redirect to login
+        window.location.href = 'login.html';
+      }
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      // On error, redirect to login to be safe
+      window.location.href = 'login.html';
+    }
+  }
 </script>
 
 </body>

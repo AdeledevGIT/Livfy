@@ -73,30 +73,8 @@
       backdrop-filter:blur(14px);
       z-index:200;
     }
-    .brand {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-family:'Fraunces', serif;
-      font-size:19px;
-      font-weight:500;
-      letter-spacing:.01em;
-    }
-    .brand-mark {
-      width:26px; height:26px;
-      border-radius:8px;
-      background:var(--grad);
-      flex-shrink:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .brand-mark img {
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      border-radius:8px;
-    }
+    .logo { display:flex; align-items:center; text-decoration:none; }
+    .logo-img { height:68px; width:auto; object-fit:contain; display:block; }
     .nav-links {
       display:flex;
       align-items:center;
@@ -432,12 +410,9 @@
 <body>
 
 <nav class="topnav">
-  <div class="brand">
-    <div class="brand-mark">
-      <img src="https://adeledevgit.github.io/Livfy/logo.png" alt="Livfy" />
-    </div>
-    <span class="wordmark">Livfy</span>
-  </div>
+  <a class="logo" href="dashboard.html">
+    <img src="https://adeledevgit.github.io/Livfy/logo.png" alt="Livfy AI" class="logo-img" />
+  </a>
 
   <div class="nav-links">
     <a href="dashboard.html">Dashboard</a>
@@ -711,14 +686,23 @@ async function initFirebase() {
 // Load user data from Firestore
 async function loadUserData(uid) {
   try {
+    console.log('Loading user data for uid:', uid);
     const userDoc = await window.getDoc(window.doc(db, 'users', uid));
     if (userDoc.exists()) {
       const data = userDoc.data();
+      console.log('User data from Firestore:', data);
       LocalStorage.setTokenBalance(data.tokenBalance || 0);
       
       // Update UI with Firestore data
-      document.getElementById('tokenBalance').textContent = data.tokenBalance || 0;
-      document.getElementById('panelTokenBalance').textContent = data.tokenBalance || 0;
+      const tokenBalanceEl = document.getElementById('tokenBalance');
+      const panelTokenBalanceEl = document.getElementById('panelTokenBalance');
+      
+      if (tokenBalanceEl) tokenBalanceEl.textContent = data.tokenBalance || 0;
+      if (panelTokenBalanceEl) panelTokenBalanceEl.textContent = data.tokenBalance || 0;
+      
+      console.log('Balance updated to:', data.tokenBalance || 0);
+    } else {
+      console.log('User document does not exist in Firestore');
     }
   } catch (error) {
     console.error('Error loading user data:', error);

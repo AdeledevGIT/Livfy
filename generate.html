@@ -715,6 +715,8 @@
 </nav>
 
 <script type="module">
+import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
+
 /* ═══════════════════════════════════════════════════════════════
    Livfy — AI Generate Studio
    Firebase Authentication & API Key Management
@@ -847,8 +849,6 @@ if (logoutBtn) {
 // Initialize Firebase
 let API_KEY = '';
 await initFirebase();
-
-import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
 
 let client = null;
 

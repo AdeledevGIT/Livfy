@@ -537,7 +537,6 @@
     <div class="s-section">
       <div class="err-box" id="errBox"></div>
     </div>
-    </div>
   </aside>
 
   <section class="video-area" id="videoArea">
@@ -608,6 +607,8 @@
 </nav>
 
 <script type="module">
+import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
+
 /* ──────────────────────────────────────────────────────────────
    Livfy — Real-Time AI Face Swap
    Firebase Authentication & API Key Management
@@ -769,8 +770,6 @@ if (balancePill) {
   });
 }
 
-import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk';
-
 let realtimeClient = null;
 
 const $ = id => document.getElementById(id);
@@ -876,7 +875,6 @@ async function stopStream(errMessage){
 
 streamBtn.addEventListener('click',startStream);
 stopBtn.addEventListener('click',()=>stopStream());
-if(!STREAM_API_KEY) showErr('API key is missing.');
 refreshBtn();
 </script>
 </body>

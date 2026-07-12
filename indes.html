@@ -947,7 +947,17 @@ function toast(msg,kind='',ms=4200){
 }
 function setStatus(txt,kind){ statusPill.className=`status-pill ${kind}`; statusTxt.textContent=txt; }
 
-function handleFile(f){ if(!f||!f.type.startsWith('image/')) return; if(f.size>10*1024*1024){toast('Image must be under 10MB','err');return;} photoBlob=f; prevImg.src=URL.createObjectURL(f); dropZone.style.display='none'; prevWrap.style.display='block'; toast('Face photo loaded!','ok'); refreshBtn(); }
+function handleFile(f){ 
+  if(!f||!f.type.startsWith('image/')) return; 
+  if(f.size>10*1024*1024){toast('Image must be under 10MB','err');return;} 
+  photoBlob=f; 
+  prevImg.src=URL.createObjectURL(f); 
+  dropZone.style.display='none'; 
+  prevWrap.style.display='block'; 
+  toast('Face photo loaded!','ok'); 
+  console.log('Photo loaded, enabling stream button');
+  refreshBtn(); 
+}
 photoFile.addEventListener('change',e=>handleFile(e.target.files[0]));
 changeFile.addEventListener('change',e=>{ if(e.target.files[0]){dropZone.style.display='block';prevWrap.style.display='none';handleFile(e.target.files[0]);} });
 dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('over');});
@@ -1227,7 +1237,11 @@ voiceDrop.addEventListener('drop', (e) => {
 
 window.addEventListener('resize',sizeStage); sizeStage();
 
-function refreshBtn(){ streamBtn.disabled=!photoBlob; }
+function refreshBtn(){ 
+  console.log('refreshBtn called, photoBlob:', !!photoBlob, 'streamBtn:', !!streamBtn);
+  if(streamBtn) streamBtn.disabled=!photoBlob; 
+  else console.error('streamBtn not found');
+}
 function startTimer(){
   timerSec=0;
   clearInterval(timerInterval);
@@ -1367,7 +1381,19 @@ async function deductTokens(amount) {
 
 streamBtn.addEventListener('click',startStream);
 stopBtn.addEventListener('click',()=>stopStream());
-refreshBtn();
+
+console.log('Event listeners attached, streamBtn:', !!streamBtn, 'stopBtn:', !!stopBtn);
+
+// Wait for DOM to be ready before initial refresh
+if(document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, calling refreshBtn');
+    refreshBtn();
+  });
+} else {
+  console.log('DOM already ready, calling refreshBtn');
+  refreshBtn();
+}
 
 // Handle tab close - deduct tokens if streaming
 window.addEventListener('beforeunload', (e) => {

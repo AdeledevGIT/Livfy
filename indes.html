@@ -374,12 +374,14 @@
       display:flex; flex-direction:column;
       align-items:center; justify-content:center;
       gap:14px; overflow:hidden;
-      min-height:400px;
+      min-height:500px;
     }
     .video-stage {
       position:relative; border-radius:16px; overflow:hidden; background:#000;
       box-shadow:0 0 0 1px var(--border), 0 24px 80px rgba(0,0,0,.6);
-      transition:box-shadow .4s; max-width:100%; max-height:calc(100vh - 160px);
+      transition:box-shadow .4s; max-width:100%; max-height:calc(100vh - 120px);
+      width: 100%;
+      aspect-ratio: 16/9;
     }
     .video-stage.live-glow { animation:stageGlow 2.5s ease-in-out infinite alternate; }
     @keyframes stageGlow {
@@ -1252,11 +1254,22 @@ function clearErr(){errBox.innerHTML='';errBox.classList.remove('show');}
 async function startStream(){
   clearErr(); streaming=true;
   
+  console.log('Start stream button clicked');
+  console.log('Photo blob exists:', !!photoBlob);
+  console.log('Current balance:', currentBalance);
+  console.log('Audio enabled:', audioEnabled);
+  
   // Check balance and calculate max seconds
   currentBalance = LocalStorage.getTokenBalance();
   if (currentBalance <= 0) {
     showErr('Insufficient tokens. Please top up your balance.');
     toast('Insufficient tokens', 'err', 5000);
+    return;
+  }
+  
+  if (!photoBlob) {
+    showErr('Please upload a target face photo first.');
+    toast('Please upload a photo first', 'err', 5000);
     return;
   }
   

@@ -927,7 +927,7 @@ const dropZone    = $('dropZone'),  photoFile   = $('photoFile'),   changeFile  
 const prevWrap    = $('prevWrap'),  prevImg     = $('prevImg'),      promptInput = $('promptInput');
 const streamBtn   = $('streamBtn'), stopBtn     = $('stopBtn');
 const liveVideo   = $('liveVideo'), vidPh       = $('vidPh'),        vidLoading  = $('vidLoading');
-const vidHud      = $('vidHud'),    hudTimer    = $('hudTimer'),      statusPill  = $('statusPill');
+const vidHud      = $('vidHud'),    hudTimer    = $('hudTimer');
 const statusTxt   = $('statusTxt'), errBox      = $('errBox'),        statsSection= $('statsSection');
 const sDur        = $('sDur'),      sState      = $('sState'),        toastEl     = $('toast');
 const videoStage  = $('videoStage'),oLand       = $('oLand'),         oPport      = $('oPport');
@@ -945,7 +945,9 @@ function toast(msg,kind='',ms=4200){
   toastEl.className=`toast show${kind?' '+kind:''}`;
   clearTimeout(_tt); _tt=setTimeout(()=>toastEl.classList.remove('show'),ms);
 }
-function setStatus(txt,kind){ statusPill.className=`status-pill ${kind}`; statusTxt.textContent=txt; }
+function setStatus(txt,kind){ 
+  if(statusTxt) statusTxt.textContent=txt; 
+}
 
 function handleFile(f){ 
   if(!f||!f.type.startsWith('image/')) return; 
@@ -978,7 +980,7 @@ const audioCost = $('audioCost');
 const voiceSection = $('voiceSection');
 const voiceSelect = $('voiceSelect');
 const voiceDrop = $('voiceDrop');
-const voiceFileInput = $('voiceFile');
+const voiceFileInput = $('voiceFileInput');
 const voiceChange = $('voiceChange');
 const voicePreview = $('voicePreview');
 const voiceFileName = $('voiceFileName');
@@ -1014,30 +1016,38 @@ audioToggleBtn.addEventListener('click', () => {
 });
 
 // Voice tab switching
-document.querySelectorAll('.voice-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.voice-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    
-    const tabMode = tab.dataset.tab;
-    voiceMode = tabMode;
-    
-    presetVoices.classList.toggle('active', tabMode === 'preset');
-    cloneVoices.classList.toggle('active', tabMode === 'clone');
+if(document.querySelectorAll('.voice-tab').length > 0) {
+  document.querySelectorAll('.voice-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.voice-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      const tabMode = tab.dataset.tab;
+      voiceMode = tabMode;
+      
+      if(presetVoices) presetVoices.classList.toggle('active', tabMode === 'preset');
+      if(cloneVoices) cloneVoices.classList.toggle('active', tabMode === 'clone');
+    });
   });
-});
+}
 
 // Voice selection
-voiceSelect.addEventListener('change', (e) => {
-  selectedVoice = e.target.value;
-  console.log('Voice selected:', selectedVoice);
-});
+if(voiceSelect) {
+  voiceSelect.addEventListener('change', (e) => {
+    selectedVoice = e.target.value;
+    console.log('Voice selected:', selectedVoice);
+  });
+}
 
 // Voice file handling
-voiceFileInput.addEventListener('change', (e) => handleVoiceFile(e.target.files[0]));
-voiceChange.addEventListener('change', (e) => { 
-  if(e.target.files[0]){voiceDrop.style.display='block';voicePreview.style.display='none';handleVoiceFile(e.target.files[0]);} 
-});
+if(voiceFileInput) {
+  voiceFileInput.addEventListener('change', (e) => handleVoiceFile(e.target.files[0]));
+}
+if(voiceChange) {
+  voiceChange.addEventListener('change', (e) => { 
+    if(e.target.files[0]){voiceDrop.style.display='block';voicePreview.style.display='none';handleVoiceFile(e.target.files[0]);} 
+  });
+}
 
 function handleVoiceFile(file) {
   if (!file || !file.type.startsWith('audio/')) {
@@ -1227,15 +1237,22 @@ async function speakText(text) {
 }
 
 // Voice drop handling
-voiceDrop.addEventListener('dragover', (e) => { e.preventDefault(); voiceDrop.classList.add('over'); });
-voiceDrop.addEventListener('dragleave', () => voiceDrop.classList.remove('over'));
-voiceDrop.addEventListener('drop', (e) => { 
-  e.preventDefault(); 
-  voiceDrop.classList.remove('over'); 
-  handleVoiceFile(e.dataTransfer.files[0]); 
-});
+if(voiceDrop) {
+  voiceDrop.addEventListener('dragover', (e) => { e.preventDefault(); voiceDrop.classList.add('over'); });
+  voiceDrop.addEventListener('dragleave', () => voiceDrop.classList.remove('over'));
+  voiceDrop.addEventListener('drop', (e) => { 
+    e.preventDefault(); 
+    voiceDrop.classList.remove('over'); 
+    handleVoiceFile(e.dataTransfer.files[0]); 
+  });
+}
 
-window.addEventListener('resize',sizeStage); sizeStage();
+// Clone voice button
+if(cloneVoiceBtn) {
+  cloneVoiceBtn.addEventListener('click', cloneVoice);
+}
+
+window.addEventListener('resize',sizeStage);
 
 function refreshBtn(){ 
   console.log('refreshBtn called, photoBlob:', !!photoBlob, 'streamBtn:', !!streamBtn);
@@ -1294,7 +1311,7 @@ async function startStream(){
   
   streamBtn.style.display='none'; stopBtn.style.display='flex';
   vidLoading.classList.remove('hide'); vidPh.classList.add('hide');
-  sizeStage(); setStatus('Connecting…','sp-live'); sState.textContent='Connecting';
+  sizeStage(); sState.textContent='Connecting';
   try{
     if (!window.STREAM_API_KEY) {
       throw new Error('API key not loaded. Please refresh the page.');
@@ -1309,7 +1326,7 @@ async function startStream(){
         liveVideo.srcObject=rs; liveVideo.play().catch(console.error); liveVideo.classList.add('show');
         vidLoading.classList.add('hide'); vidPh.classList.add('hide'); vidHud.style.display='flex';
         videoStage.classList.add('live-glow'); statsSection.style.display='block';
-        startTimer(); setStatus('AI Swap Live','sp-ok'); sState.textContent='Live'; toast('Face swap is live!','ok');
+        startTimer(); sState.textContent='Live'; toast('Face swap is live!','ok');
         
         // Voice announcement when live
         if (audioEnabled) {
@@ -1336,7 +1353,6 @@ async function stopStream(errMessage){
   liveVideo.srcObject=null; liveVideo.classList.remove('show');
   vidHud.style.display='none'; vidLoading.classList.add('hide'); vidPh.classList.remove('hide');
   videoStage.classList.remove('live-glow'); sState.textContent='—'; sDur.textContent='0s';
-  setStatus('Idle','sp-idle');
   
   // Deduct tokens if stream was stopped normally (not due to error)
   if (!errMessage && timerSec > 0) {
@@ -1389,10 +1405,12 @@ if(document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, calling refreshBtn');
     refreshBtn();
+    sizeStage();
   });
 } else {
   console.log('DOM already ready, calling refreshBtn');
   refreshBtn();
+  sizeStage();
 }
 
 // Handle tab close - deduct tokens if streaming

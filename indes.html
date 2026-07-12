@@ -286,6 +286,53 @@
     .orient-btn:hover { background:rgba(255,255,255,.04); color:var(--txt2); }
     .orient-btn.sel { background:rgba(255,45,111,.12); border-color:rgba(255,45,111,.4); color:var(--accent); }
 
+    /* Audio toggle */
+    .audio-toggle { display:flex; flex-direction:column; gap:8px; }
+    .audio-btn {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 14px; border-radius:9px; cursor:pointer;
+      border:1px solid var(--border-h);
+      background:transparent; color:var(--txt3);
+      font-size:12px; font-weight:600; font-family:inherit;
+      transition:all .25s;
+    }
+    .audio-btn:hover { background:rgba(255,255,255,.04); color:var(--txt2); }
+    .audio-btn.active { background:rgba(255,45,111,.12); border-color:rgba(255,45,111,.4); color:var(--accent); }
+    .audio-btn svg { width:16px; height:16px; }
+    .audio-note { font-size:10px; color:var(--txt3); text-align:center; }
+
+    /* Voice selection */
+    .voice-section { margin-top:12px; border-top:1px solid var(--border); padding-top:12px; }
+    .voice-tabs { display:flex; gap:6px; margin-bottom:12px; }
+    .voice-tab {
+      flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+      padding:8px 12px; border-radius:8px; cursor:pointer;
+      border:1px solid var(--border-h);
+      background:transparent; color:var(--txt3);
+      font-size:11px; font-weight:600; font-family:inherit;
+      transition:all .25s;
+    }
+    .voice-tab:hover { background:rgba(255,255,255,.04); color:var(--txt2); }
+    .voice-tab.active { background:rgba(255,45,111,.12); border-color:rgba(255,45,111,.4); color:var(--accent); }
+    
+    .voice-content { display:none; }
+    .voice-content.active { display:block; }
+    
+    .voice-select {
+      width:100%; padding:10px 12px; border-radius:9px;
+      border:1px solid var(--border-h);
+      background:rgba(6,8,16,.7); color:var(--txt);
+      font-size:12px; font-family:inherit;
+      cursor:pointer;
+    }
+    .voice-select:focus { outline:none; border-color:rgba(255,45,111,.45); }
+    
+    .voice-preview-info {
+      display:flex; align-items:center; gap:8px; padding:8px 12px;
+      border-radius:8px; background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.3);
+      font-size:11px; color:var(--green);
+    }
+
     /* Buttons */
     .main-btn {
       width:100%; padding:13px; border-radius:11px; border:none;
@@ -503,6 +550,79 @@
       </div>
     </div>
 
+    <div class="s-section">
+      <div class="s-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+        Audio
+      </div>
+      <div class="audio-toggle">
+        <button class="audio-btn" id="audioToggle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+          <span id="audioStatus">Audio Off</span>
+        </button>
+        <div class="audio-note">
+          <span id="audioCost">Cost: 0.5 tokens/sec</span>
+        </div>
+      </div>
+      
+      <!-- Voice Selection (shown when audio is enabled) -->
+      <div class="voice-section" id="voiceSection" style="display:none;">
+        <div class="voice-tabs">
+          <button class="voice-tab active" data-tab="preset">Choose Voice</button>
+          <button class="voice-tab" data-tab="clone">Clone Voice</button>
+        </div>
+        
+        <!-- Preset Voices -->
+        <div class="voice-content" id="presetVoices">
+          <div class="field-label">Select Voice</div>
+          <select id="voiceSelect" class="voice-select">
+            <option value="af_heart">Af_Heart (Female, Warm)</option>
+            <option value="af_bella">Af_Bella (Female, Clear)</option>
+            <option value="af_nicole">Af_Nicole (Female, Soft)</option>
+            <option value="af_sarah">Af_Sarah (Female, Professional)</option>
+            <option value="am_michael">Am_Michael (Male, Deep)</option>
+            <option value="am_adam">Am_Adam (Male, Friendly)</option>
+            <option value="bm_george">Bm_George (Male, British)</option>
+            <option value="bf_emma">Bf_Emma (Female, British)</option>
+            <option value="em_scientist">Em_Scientist (Male, Authoritative)</option>
+            <option value="em_alex">Em_Alex (Male, Casual)</option>
+          </select>
+          
+          <!-- Saved Cloned Voices -->
+          <div id="savedVoicesSection" style="margin-top:16px;display:none;">
+            <div class="field-label">Your Cloned Voices</div>
+            <div id="savedVoicesList" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+        </div>
+        
+        <!-- Voice Cloning -->
+        <div class="voice-content" id="cloneVoices" style="display:none;">
+          <div class="field-label">Upload Voice Sample (10-60 seconds)</div>
+          <div class="drop" id="voiceDrop">
+            <input type="file" id="voiceFileInput" accept="audio/*" />
+            <span class="drop-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg></span>
+            <div class="drop-t">Drop voice sample here</div>
+            <div class="drop-s">MP3 · WAV · 10-60 seconds</div>
+          </div>
+          <div id="voicePreview" style="display:none;margin-top:10px;">
+            <div class="voice-preview-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span id="voiceFileName">Voice sample loaded</span>
+              <label class="change-btn">
+                <input type="file" id="voiceChange" accept="audio/*" />
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></polyline></svg>
+                Change
+              </label>
+            </div>
+          </div>
+          <button class="audio-btn" id="cloneVoiceBtn" style="margin-top:12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            <span>Clone Voice</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="s-section" id="statsSection" style="display:none;">
       <div class="s-label">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -601,6 +721,9 @@ let app = null;
 let auth = null;
 let db = null;
 let currentUser = null;
+
+// Free.ai API Configuration
+let FREE_AI_API_KEY = 'sk-free-demo'; // Will be loaded from server
 
 // Local Storage Management
 const LocalStorage = {
@@ -731,10 +854,17 @@ async function fetchAPIKey(token) {
     
     if (response.ok && data.apiKey) {
       window.STREAM_API_KEY = data.apiKey;
-      console.log('API key loaded successfully');
-    } else {
-      console.error('Failed to fetch API key:', data);
-      alert('Failed to load API key. Please try logging in again.');
+      console.log('Decart API key loaded successfully');
+    }
+    
+    if (response.ok && data.freeAiApiKey) {
+      FREE_AI_API_KEY = data.freeAiApiKey;
+      console.log('Free.ai API key loaded successfully');
+    }
+    
+    if (!response.ok || (!data.apiKey && !data.freeAiApiKey)) {
+      console.error('Failed to fetch API keys:', data);
+      alert('Failed to load API keys. Please try again.');
       window.location.href = 'login.html';
     }
   } catch (error) {
@@ -803,6 +933,8 @@ const orientLabel = $('orientLabel');
 
 let photoBlob=null, orient='landscape', streaming=false;
 let camStream=null, timerSec=0, timerInterval=null, maxSeconds=0, currentBalance=0;
+let audioEnabled=false, audioContext=null, audioTokenCost=0.5;
+let selectedVoice='af_heart', voiceDataFile=null, voiceMode='preset';
 
 let _tt;
 function toast(msg,kind='',ms=4200){
@@ -826,6 +958,271 @@ function sizeStage(){
   else{let h=ah,w=h*9/16;if(w>aw){w=aw;h=w*16/9;} videoStage.style.width=`${Math.round(w)}px`;videoStage.style.height=`${Math.round(h)}px`;}
 }
 [oLand,oPport].forEach(btn=>btn.addEventListener('click',()=>{orient=btn.dataset.orient;oLand.classList.toggle('sel',orient==='landscape');oPport.classList.toggle('sel',orient==='portrait');orientLabel.innerHTML=orient==='landscape'?'<svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"2\" y=\"7\" width=\"20\" height=\"10\" rx=\"2\"></rect></svg> Landscape':'<svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"7\" y=\"2\" width=\"10\" height=\"20\" rx=\"2\"></rect></svg> Portrait';sizeStage();}));
+
+// Audio toggle functionality
+const audioToggleBtn = $('audioToggle');
+const audioStatus = $('audioStatus');
+const audioCost = $('audioCost');
+const voiceSection = $('voiceSection');
+const voiceSelect = $('voiceSelect');
+const voiceDrop = $('voiceDrop');
+const voiceFileInput = $('voiceFile');
+const voiceChange = $('voiceChange');
+const voicePreview = $('voicePreview');
+const voiceFileName = $('voiceFileName');
+const presetVoices = $('presetVoices');
+const cloneVoices = $('cloneVoices');
+const cloneVoiceBtn = $('cloneVoiceBtn');
+const savedVoicesSection = $('savedVoicesSection');
+const savedVoicesList = $('savedVoicesList');
+
+audioToggleBtn.addEventListener('click', () => {
+  audioEnabled = !audioEnabled;
+  audioToggleBtn.classList.toggle('active', audioEnabled);
+  
+  if (audioEnabled) {
+    audioStatus.textContent = 'Audio On';
+    audioCost.textContent = 'Cost: 1.0 tokens/sec';
+    voiceSection.style.display = 'block';
+    loadSavedVoices(); // Load saved voices when audio is enabled
+    toast('Audio enabled - Select voice or clone your own', 'info', 3000);
+  } else {
+    audioStatus.textContent = 'Audio Off';
+    audioCost.textContent = 'Cost: 0.5 tokens/sec';
+    voiceSection.style.display = 'none';
+    toast('Audio disabled', 'info', 2000);
+  }
+  
+  // Update max seconds calculation if not streaming
+  if (!streaming) {
+    const tokenCostPerSecond = audioEnabled ? 1.0 : 0.5;
+    maxSeconds = Math.floor(currentBalance / tokenCostPerSecond);
+    console.log(`Audio toggled: ${audioEnabled}, New max streaming time: ${maxSeconds} seconds`);
+  }
+});
+
+// Voice tab switching
+document.querySelectorAll('.voice-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.voice-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    const tabMode = tab.dataset.tab;
+    voiceMode = tabMode;
+    
+    presetVoices.classList.toggle('active', tabMode === 'preset');
+    cloneVoices.classList.toggle('active', tabMode === 'clone');
+  });
+});
+
+// Voice selection
+voiceSelect.addEventListener('change', (e) => {
+  selectedVoice = e.target.value;
+  console.log('Voice selected:', selectedVoice);
+});
+
+// Voice file handling
+voiceFileInput.addEventListener('change', (e) => handleVoiceFile(e.target.files[0]));
+voiceChange.addEventListener('change', (e) => { 
+  if(e.target.files[0]){voiceDrop.style.display='block';voicePreview.style.display='none';handleVoiceFile(e.target.files[0]);} 
+});
+
+function handleVoiceFile(file) {
+  if (!file || !file.type.startsWith('audio/')) {
+    toast('Please upload an audio file', 'err');
+    return;
+  }
+  
+  // Check file duration (10-60 seconds)
+  const audio = new Audio(URL.createObjectURL(file));
+  audio.addEventListener('loadedmetadata', () => {
+    const duration = audio.duration;
+    if (duration < 10 || duration > 60) {
+      toast('Voice sample must be 10-60 seconds', 'err');
+      return;
+    }
+    
+    voiceDataFile = file;
+    voiceDrop.style.display = 'none';
+    voicePreview.style.display = 'block';
+    voiceFileName.textContent = file.name;
+    toast('Voice sample loaded successfully', 'ok');
+  });
+}
+
+// Clone voice button
+cloneVoiceBtn.addEventListener('click', cloneVoice);
+
+// Clone voice button
+cloneVoiceBtn.addEventListener('click', cloneVoice);
+
+// Free.ai Voice Cloning
+async function cloneVoice() {
+  if (!voiceDataFile) {
+    toast('Please upload a voice sample first', 'err');
+    return;
+  }
+
+  // Check token balance
+  const currentBalance = LocalStorage.getTokenBalance();
+  const CLONE_COST = 30;
+  
+  if (currentBalance < CLONE_COST) {
+    toast(`Insufficient tokens. Voice cloning costs ${CLONE_COST} tokens. You have ${currentBalance} tokens.`, 'err', 5000);
+    return;
+  }
+
+  try {
+    toast('Cloning voice... this may take a moment', 'info');
+    
+    const formData = new FormData();
+    formData.append('file', voiceDataFile);
+    
+    const response = await fetch('https://api.free.ai/v1/tts/clone/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${FREE_AI_API_KEY}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Voice cloning failed');
+    }
+
+    const data = await response.json();
+    console.log('Voice cloned successfully:', data);
+    
+    // Store cloned voice data
+    const voiceData = {
+      id: data.voice_id || 'default',
+      name: voiceDataFile.name.replace(/\.[^/.]+$/, ""),
+      createdAt: new Date().toISOString(),
+      sampleUrl: URL.createObjectURL(voiceDataFile)
+    };
+    
+    // Save to localStorage
+    const savedVoices = JSON.parse(localStorage.getItem('savedVoices') || '[]');
+    savedVoices.push(voiceData);
+    localStorage.setItem('savedVoices', JSON.stringify(savedVoices));
+    
+    // Save current cloned voice ID for immediate use
+    localStorage.setItem('currentClonedVoiceId', data.voice_id || 'default');
+    
+    // Deduct tokens
+    const newBalance = currentBalance - CLONE_COST;
+    LocalStorage.setTokenBalance(newBalance);
+    currentBalance = newBalance;
+    
+    // Update UI
+    document.getElementById('tokenBalance').textContent = newBalance;
+    document.getElementById('panelTokenBalance').textContent = newBalance;
+    
+    // Update Firestore if user is logged in
+    if (currentUser) {
+      try {
+        const userRef = window.doc(db, 'users', currentUser.uid);
+        await window.updateDoc(userRef, {
+          tokens: newBalance,
+          voices: savedVoices
+        });
+      } catch (firestoreError) {
+        console.error('Error updating Firestore:', firestoreError);
+      }
+    }
+    
+    toast('Voice cloned successfully! 30 tokens deducted.', 'ok');
+    
+    // Refresh saved voices list
+    loadSavedVoices();
+    
+    // Reset upload
+    voiceDataFile = null;
+    voiceDrop.style.display = 'block';
+    voicePreview.style.display = 'none';
+    
+  } catch (error) {
+    console.error('Voice cloning error:', error);
+    toast('Voice cloning failed: ' + error.message, 'err', 5000);
+  }
+}
+
+// Load saved voices from localStorage
+function loadSavedVoices() {
+  const savedVoices = JSON.parse(localStorage.getItem('savedVoices') || '[]');
+  
+  if (savedVoices.length > 0) {
+    savedVoicesSection.style.display = 'block';
+    savedVoicesList.innerHTML = savedVoices.map((voice, index) => `
+      <div class="saved-voice-item" style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--surface);border-radius:8px;border:1px solid var(--line);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+        <span style="font-size:13px;color:var(--text);flex:1;">${voice.name}</span>
+        <button class="use-saved-voice-btn" data-voice-id="${voice.id}" style="padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--text-dim);font-size:11px;cursor:pointer;">Use</button>
+      </div>
+    `).join('');
+    
+    // Add event listeners to use buttons
+    savedVoicesList.querySelectorAll('.use-saved-voice-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const voiceId = e.target.dataset.voiceId;
+        localStorage.setItem('currentClonedVoiceId', voiceId);
+        voiceMode = 'clone';
+        selectedVoice = voiceId;
+        toast('Cloned voice selected for streaming', 'ok', 2000);
+      });
+    });
+  } else {
+    savedVoicesSection.style.display = 'none';
+  }
+}
+
+// Free.ai Text-to-Speech for announcements
+async function speakText(text) {
+  if (!audioEnabled) return;
+  
+  try {
+    const voiceId = voiceMode === 'clone' ? localStorage.getItem('currentClonedVoiceId') : selectedVoice;
+    
+    const response = await fetch('https://api.free.ai/v1/tts/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${FREE_AI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: text,
+        voice: voiceId || selectedVoice,
+        model: 'kokoro'
+      })
+    });
+
+    if (!response.ok) {
+      console.error('TTS failed:', response.status);
+      return;
+    }
+
+    const data = await response.json();
+    
+    // Play the generated audio
+    if (data.audio_url) {
+      const audio = new Audio(data.audio_url);
+      audio.play();
+    }
+  } catch (error) {
+    console.error('TTS error:', error);
+  }
+}
+
+// Voice drop handling
+voiceDrop.addEventListener('dragover', (e) => { e.preventDefault(); voiceDrop.classList.add('over'); });
+voiceDrop.addEventListener('dragleave', () => voiceDrop.classList.remove('over'));
+voiceDrop.addEventListener('drop', (e) => { 
+  e.preventDefault(); 
+  voiceDrop.classList.remove('over'); 
+  handleVoiceFile(e.dataTransfer.files[0]); 
+});
+
 window.addEventListener('resize',sizeStage); sizeStage();
 
 function refreshBtn(){ streamBtn.disabled=!photoBlob; }
@@ -840,9 +1237,10 @@ function startTimer(){
     
     // Check if we've reached max seconds
     if (timerSec >= maxSeconds) {
+      const tokenCostPerSecond = audioEnabled ? 1.0 : 0.5;
       console.log(`Time limit reached: ${timerSec}s / ${maxSeconds}s`);
-      stopStream('Time limit reached. Tokens used: ' + (timerSec * 0.5).toFixed(1));
-      deductTokens(timerSec * 0.5);
+      stopStream('Time limit reached. Tokens used: ' + (timerSec * tokenCostPerSecond).toFixed(1));
+      deductTokens(timerSec * tokenCostPerSecond);
     }
   },1000);
 }
@@ -854,7 +1252,7 @@ function clearErr(){errBox.innerHTML='';errBox.classList.remove('show');}
 async function startStream(){
   clearErr(); streaming=true;
   
-  // Check balance and calculate max seconds (0.5 tokens per second)
+  // Check balance and calculate max seconds
   currentBalance = LocalStorage.getTokenBalance();
   if (currentBalance <= 0) {
     showErr('Insufficient tokens. Please top up your balance.');
@@ -862,9 +1260,10 @@ async function startStream(){
     return;
   }
   
-  // Calculate max seconds: 1 token = 2 seconds (0.5 tokens/sec)
-  maxSeconds = Math.floor(currentBalance * 2);
-  console.log(`Current balance: ${currentBalance} tokens, Max streaming time: ${maxSeconds} seconds`);
+  // Calculate token cost per second: 0.5 tokens/sec for video only, 1 token/sec with audio
+  const tokenCostPerSecond = audioEnabled ? 1.0 : 0.5;
+  maxSeconds = Math.floor(currentBalance / tokenCostPerSecond);
+  console.log(`Current balance: ${currentBalance} tokens, Audio: ${audioEnabled}, Cost: ${tokenCostPerSecond} tokens/sec, Max streaming time: ${maxSeconds} seconds`);
   
   streamBtn.style.display='none'; stopBtn.style.display='flex';
   vidLoading.classList.remove('hide'); vidPh.classList.add('hide');
@@ -875,7 +1274,7 @@ async function startStream(){
     }
     const model=models.realtime('lucy-2.1');
     const isPort=orient==='portrait';
-    camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:isPort?model.height:model.width},height:{ideal:isPort?model.width:model.height},frameRate:typeof model.fps==='object'?{ideal:model.fps.ideal,max:model.fps.max}:{ideal:model.fps},facingMode:'user'},audio:false});
+    camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:isPort?model.height:model.width},height:{ideal:isPort?model.width:model.height},frameRate:typeof model.fps==='object'?{ideal:model.fps.ideal,max:model.fps.max}:{ideal:model.fps},facingMode:'user'},audio:audioEnabled});
     const client=createDecartClient({apiKey:window.STREAM_API_KEY});
     const imageBlob=new Blob([await photoBlob.arrayBuffer()],{type:photoBlob.type});
     realtimeClient=await client.realtime.connect(camStream,{model,mirror:'auto',
@@ -884,6 +1283,11 @@ async function startStream(){
         vidLoading.classList.add('hide'); vidPh.classList.add('hide'); vidHud.style.display='flex';
         videoStage.classList.add('live-glow'); statsSection.style.display='block';
         startTimer(); setStatus('AI Swap Live','sp-ok'); sState.textContent='Live'; toast('Face swap is live!','ok');
+        
+        // Voice announcement when live
+        if (audioEnabled) {
+          speakText('Face swap is now live');
+        }
       },
       onConnectionChange:(state)=>{sState.textContent=state;if(state==='disconnected'||state==='failed')stopStream('Connection lost — please retry.');},
       initialState:{prompt:{text:promptInput.value.trim()||'Swap the face in the video with the uploaded face image exactly',enhance:true},image:imageBlob}
@@ -909,7 +1313,8 @@ async function stopStream(errMessage){
   
   // Deduct tokens if stream was stopped normally (not due to error)
   if (!errMessage && timerSec > 0) {
-    const tokensUsed = timerSec * 0.5;
+    const tokenCostPerSecond = audioEnabled ? 1.0 : 0.5;
+    const tokensUsed = timerSec * tokenCostPerSecond;
     deductTokens(tokensUsed);
   }
   
@@ -954,7 +1359,8 @@ refreshBtn();
 // Handle tab close - deduct tokens if streaming
 window.addEventListener('beforeunload', (e) => {
   if (streaming && timerSec > 0) {
-    const tokensUsed = timerSec * 0.5;
+    const tokenCostPerSecond = audioEnabled ? 1.0 : 0.5;
+    const tokensUsed = timerSec * tokenCostPerSecond;
     // Use sendBeacon to ensure request completes even when tab closes
     const data = {
       uid: currentUser?.uid,

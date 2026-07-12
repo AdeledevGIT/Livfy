@@ -250,15 +250,17 @@ app.post('/api/payment/process', authenticateFirebaseToken, async (req, res) => 
 app.post('/api/ai/stream', authenticateFirebaseToken, (req, res) => {
   res.json({ 
     apiKey: process.env.DECART_API_KEY,
-    message: 'API key provided for authenticated user'
+    freeAiApiKey: process.env.FREE_AI_API_KEY || 'sk-free-demo',
+    message: 'API keys provided for authenticated user'
   });
 });
 
 // Protected API endpoint for generation
 app.post('/api/ai/generate', authenticateFirebaseToken, (req, res) => {
   res.json({ 
-    apiKey: process.env.DECART_API_KEY,
-    message: 'API key provided for authenticated user'
+    decartApiKey: process.env.DECART_API_KEY,
+    freeAiApiKey: process.env.FREE_AI_API_KEY || 'sk-free-demo',
+    message: 'API keys provided for authenticated user'
   });
 });
 
